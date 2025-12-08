@@ -1,0 +1,24 @@
+[Sat Dec  6 16:16:45 2025] PHP 8.3.6 Development Server (http://0.0.0.0:8080) started
+[Sat Dec  6 16:16:46 2025] 127.0.0.1:48940 Accepted
+[Sat Dec  6 16:16:46 2025] 127.0.0.1:48940 [200]: GET /login.php
+[Sat Dec  6 16:16:46 2025] 127.0.0.1:48940 Closing
+[Sat Dec  6 16:16:46 2025] 127.0.0.1:48944 Accepted
+[Sat Dec  6 16:16:46 2025] 127.0.0.1:48944 [200]: GET /assets/style.css
+[Sat Dec  6 16:16:46 2025] 127.0.0.1:48944 Closing
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48956 Accepted
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48956 [302]: POST /src/login_handler.php
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48956 Closing
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48972 Accepted
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48972 [200]: GET /dashboard.php
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48972 Closing
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48974 Accepted
+[Sat Dec  6 16:16:47 2025] PHP Warning:  Undefined variable $conn in /app/clientes.php on line 7
+[Sat Dec  6 16:16:47 2025] PHP Fatal error:  Uncaught Error: Call to a member function query() on null in /app/clientes.php:7
+Stack trace:
+#0 {main}
+  thrown in /app/clientes.php on line 7
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48974 [200]: GET /clientes.php - Uncaught Error: Call to a member function query() on null in /app/clientes.php:7
+Stack trace:
+#0 {main}
+  thrown in /app/clientes.php on line 7
+[Sat Dec  6 16:16:47 2025] 127.0.0.1:48974 Closing

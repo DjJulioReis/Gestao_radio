@@ -1,0 +1,19 @@
+[Sat Dec  6 16:41:04 2025] PHP 8.3.6 Development Server (http://0.0.0.0:8080) started
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41562 Accepted
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41562 [200]: GET /login.php
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41562 Closing
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41564 Accepted
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41564 [200]: GET /assets/style.css
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41564 Closing
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41572 Accepted
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41572 [302]: POST /src/login_handler.php
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41572 Closing
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41582 Accepted
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41582 [200]: GET /dashboard.php
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41582 Closing
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41598 Accepted
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41598 [200]: GET /clientes.php
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41598 Closing
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41610 Accepted
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41610 [200]: GET /assets/style.css
+[Sat Dec  6 16:41:07 2025] 127.0.0.1:41610 Closing
