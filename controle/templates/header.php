@@ -1,5 +1,8 @@
 <?php
-// O init.php já cuida do session_start()
+// Garante que o init.php seja carregado para iniciar a sessão e as configurações
+require_once __DIR__ . '/../init.php';
+
+// Agora a verificação de sessão pode ser feita com segurança
 if (!isset($_SESSION['user_id']) && basename($_SERVER['PHP_SELF']) !== 'login.php') {
     // O redirecionamento agora é relativo
     header("Location: login.php");

@@ -1,6 +1,7 @@
+<?php
 $page_title = "Gestão de Contratos";
 require_once __DIR__ . '/templates/header.php';
-require_once __DIR__ . '/src/db_connect.php';
+// A conexão com o banco de dados já é feita no init.php, incluído pelo header.php
 
 $sql = "
     SELECT

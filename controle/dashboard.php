@@ -141,6 +141,11 @@ if (!isset($_SESSION['user_id'])) {
             <a href="financeiro.php">Acessar</a>
             </div>
             <div class="card">
+                <h3>Contratos</h3>
+                <p>Gerencie os contratos comerciais com clientes e planos.</p>
+                <a href="contratos.php">Acessar</a>
+            </div>
+            <div class="card">
                 <h3>Apoios Culturais</h3>
                 <p>Gerencie projetos culturais e seus respectivos apoiadores.</p>
                 <a href="apoios_culturais.php">Acessar</a>

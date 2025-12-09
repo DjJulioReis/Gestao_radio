@@ -56,6 +56,21 @@ foreach ($clientes_amostra as $cliente) {
 echo "Clientes de amostra inseridos.\n";
 $stmt_cliente->close();
 
+// Inserir dados de amostra para planos
+$planos_amostra = [
+    ['Plano Essencial', 'Pacote básico de anúncios rotativos.', 150.00, 30],
+    ['Plano Plus', 'Mais visibilidade e horários preferenciais.', 300.00, 60],
+    ['Plano Premium', 'Destaque total na programação e eventos.', 500.00, 100],
+];
+
+$stmt_plano = $conn->prepare("INSERT INTO planos (nome, descricao, preco, insercoes_mes) VALUES (?, ?, ?, ?)");
+foreach ($planos_amostra as $plano) {
+    $stmt_plano->bind_param("ssdi", $plano[0], $plano[1], $plano[2], $plano[3]);
+    $stmt_plano->execute();
+}
+echo "Planos de amostra inseridos.\n";
+$stmt_plano->close();
+
 $conn->close();
 
 echo "Setup concluído!\n";
