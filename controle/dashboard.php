@@ -140,6 +140,11 @@ if (!isset($_SESSION['user_id'])) {
             <p>Visualize e gerencie cobranças, débitos e pagamentos de clientes.</p>
             <a href="financeiro.php">Acessar</a>
             </div>
+            <div class="card">
+                <h3>Apoios Culturais</h3>
+                <p>Gerencie projetos culturais e seus respectivos apoiadores.</p>
+                <a href="apoios_culturais.php">Acessar</a>
+            </div>
         </div>
         
 

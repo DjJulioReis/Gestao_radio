@@ -23,8 +23,6 @@ CREATE TABLE `clientes` (
   `saldo_permuta` decimal(10,2) NOT NULL DEFAULT 0.00,
   `data_cadastro` datetime NOT NULL,
   `ativo` tinyint(1) DEFAULT 1,
-  `plano_id` int(11) NOT NULL,
-  `data_vencimento` tinyint(4) NOT NULL DEFAULT 10,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cnpj_cpf` (`cnpj_cpf`),
   UNIQUE KEY `email` (`email`)
@@ -121,3 +119,24 @@ ALTER TABLE `cobrancas`
 ALTER TABLE `contratos`
   ADD CONSTRAINT `contratos_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
   ADD CONSTRAINT `contratos_ibfk_2` FOREIGN KEY (`plano_id`) REFERENCES `planos` (`id`);
+
+CREATE TABLE `apoios_culturais` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `nome_projeto` VARCHAR(255) NOT NULL,
+  `descricao` TEXT,
+  `meta_arrecadacao` DECIMAL(10, 2) DEFAULT 0.00,
+  `data_inicio` DATE,
+  `data_fim` DATE,
+  `data_criacao` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `apoios_clientes` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `apoio_id` INT NOT NULL,
+  `cliente_id` INT NOT NULL,
+  `valor_doado` DECIMAL(10, 2) NOT NULL,
+  `forma_anuncio` TEXT,
+  `data_apoio` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`apoio_id`) REFERENCES `apoios_culturais`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE
+);

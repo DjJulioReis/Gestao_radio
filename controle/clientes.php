@@ -5,10 +5,8 @@ require_once 'templates/header.php';
 
 // Agora buscamos também data_cadastro e ativo
 $sql = "SELECT c.id, c.empresa, c.cnpj_cpf, c.email, c.telefone, 
-               c.data_cadastro, c.plano_id, c.ativo,
-               p.nome AS plano
+               c.data_cadastro, c.ativo
         FROM clientes c
-        LEFT JOIN planos p ON c.plano_id = p.id
         ORDER BY c.empresa";
 $result = $conn->query($sql);
 ?>
@@ -28,7 +26,6 @@ $result = $conn->query($sql);
             <th>Email</th>
             <th>Telefone</th>
             <th>Data Cadastro</th>
-            <th>Plano</th>
             <th>Ativo</th>
             <?php if ($_SESSION['user_level'] === 'admin'): ?>
                 <th>Ações</th>
@@ -57,7 +54,6 @@ $result = $conn->query($sql);
                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                     <td><?php echo htmlspecialchars($row['telefone']); ?></td>
                     <td><?php echo $dataFormatada; ?></td>
-                    <td><?php echo $row['plano'] ? htmlspecialchars($row['plano']) : '—'; ?></td>
                     <td><?php echo $badge; ?></td>
 
                     <?php if ($_SESSION['user_level'] === 'admin'): ?>
