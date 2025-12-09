@@ -51,7 +51,9 @@ CREATE TABLE despesas (
     valor DECIMAL(10, 2) NOT NULL,
     data_vencimento DATE NOT NULL,
     tipo ENUM('fixa', 'normal') NOT NULL,
-    pago BOOLEAN DEFAULT FALSE
+    pago BOOLEAN DEFAULT FALSE,
+    observacao TEXT,
+    recibo_path VARCHAR(255) DEFAULT NULL
 );
 
 CREATE TABLE locutores (

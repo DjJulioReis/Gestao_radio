@@ -6,7 +6,7 @@ require_once 'templates/header.php';
 // Filtro (não implementado ainda, mas a estrutura está aqui)
 $filtro_mes = isset($_GET['mes']) ? $_GET['mes'] : date('Y-m');
 
-$sql = "SELECT id, descricao, valor, data_vencimento, tipo, pago FROM despesas ORDER BY data_vencimento DESC";
+$sql = "SELECT id, descricao, valor, data_vencimento, tipo, pago, observacao, recibo_path FROM despesas ORDER BY data_vencimento DESC";
 $result = $conn->query($sql);
 ?>
 
@@ -30,6 +30,8 @@ $result = $conn->query($sql);
             <th>Vencimento</th>
             <th>Tipo</th>
             <th>Status</th>
+            <th>Observação</th>
+            <th>Recibo</th>
             <?php if ($_SESSION['user_level'] === 'admin'): ?>
                 <th>Ações</th>
             <?php endif; ?>
@@ -46,12 +48,20 @@ $result = $conn->query($sql);
                     <td class="<?php echo $row['pago'] ? 'pago-sim' : 'pago-nao'; ?>">
                         <?php echo $row['pago'] ? 'Pago' : 'Pendente'; ?>
                     </td>
+                    <td><?php echo htmlspecialchars($row['observacao'] ?? ''); ?></td>
+                    <td>
+                        <?php if (!empty($row['recibo_path'])): ?>
+                            <a href="<?php echo htmlspecialchars($row['recibo_path']); ?>" target="_blank">Ver</a>
+                        <?php else: ?>
+                            N/A
+                        <?php endif; ?>
+                    </td>
                     <?php if ($_SESSION['user_level'] === 'admin'): ?>
                         <td class="actions">
-                            <a href="despesa_edit.php?id=<?php echo $row['id']; ?>">Editar</a>
-                            <a href="src/despesa_delete_handler.php?id=<?php echo $row['id']; ?>" onclick="return confirm('Tem certeza?');">Excluir</a>
+                            <a href="despesa_edit.php?id=<?php echo $row['id']; ?>" title="Editar"><i class="fas fa-pencil-alt"></i></a>
+                            <a href="src/despesa_delete_handler.php?id=<?php echo $row['id']; ?>" onclick="return confirm('Tem certeza?');" title="Excluir"><i class="fas fa-trash-alt"></i></a>
                             <?php if (!$row['pago']): ?>
-                                <a href="src/despesa_pago_handler.php?id=<?php echo $row['id']; ?>">Marcar como Pago</a>
+                                <a href="src/despesa_pago_handler.php?id=<?php echo $row['id']; ?>" title="Marcar como Pago"><i class="fas fa-check-circle"></i></a>
                             <?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -59,7 +69,7 @@ $result = $conn->query($sql);
             <?php endwhile; ?>
         <?php else: ?>
             <tr>
-                <td colspan="<?php echo ($_SESSION['user_level'] === 'admin') ? '6' : '5'; ?>">Nenhuma despesa cadastrada.</td>
+                <td colspan="<?php echo ($_SESSION['user_level'] === 'admin') ? '8' : '7'; ?>">Nenhuma despesa cadastrada.</td>
             </tr>
         <?php endif; ?>
     </tbody>

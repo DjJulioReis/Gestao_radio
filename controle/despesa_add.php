@@ -11,7 +11,7 @@ if ($_SESSION['user_level'] !== 'admin') {
 ?>
 
 <h1><?php echo $page_title; ?></h1>
-<form action="src/despesa_add_handler.php" method="post">
+<form action="src/despesa_add_handler.php" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label for="descricao">Descrição</label>
         <input type="text" name="descricao" id="descricao" required>
@@ -30,6 +30,14 @@ if ($_SESSION['user_level'] !== 'admin') {
             <option value="normal">Normal</option>
             <option value="fixa">Fixa</option>
         </select>
+    </div>
+    <div class="form-group">
+        <label for="observacao">Observação</label>
+        <textarea name="observacao" id="observacao" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="recibo">Recibo (PDF, JPG, PNG)</label>
+        <input type="file" name="recibo" id="recibo">
     </div>
     <button type="submit">Salvar</button>
     <a href="despesas.php" class="cancel-link">Cancelar</a>

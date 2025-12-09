@@ -23,7 +23,7 @@ $despesa = $result->fetch_assoc();
 ?>
 
 <h1><?php echo $page_title; ?></h1>
-<form action="src/despesa_edit_handler.php" method="post">
+<form action="src/despesa_edit_handler.php" method="post" enctype="multipart/form-data">
     <input type="hidden" name="id" value="<?php echo $despesa['id']; ?>">
     <div class="form-group">
         <label for="descricao">Descrição</label>
@@ -43,6 +43,17 @@ $despesa = $result->fetch_assoc();
             <option value="normal" <?php echo ($despesa['tipo'] == 'normal') ? 'selected' : ''; ?>>Normal</option>
             <option value="fixa" <?php echo ($despesa['tipo'] == 'fixa') ? 'selected' : ''; ?>>Fixa</option>
         </select>
+    </div>
+    <div class="form-group">
+        <label for="observacao">Observação</label>
+        <textarea name="observacao" id="observacao" rows="3"><?php echo htmlspecialchars($despesa['observacao'] ?? ''); ?></textarea>
+    </div>
+    <div class="form-group">
+        <label for="recibo">Novo Recibo (opcional)</label>
+        <input type="file" name="recibo" id="recibo">
+        <?php if (!empty($despesa['recibo_path'])): ?>
+            <p>Recibo Atual: <a href="<?php echo htmlspecialchars($despesa['recibo_path']); ?>" target="_blank">Visualizar</a></p>
+        <?php endif; ?>
     </div>
     <div class="form-group">
         <label for="pago">Status</label>
