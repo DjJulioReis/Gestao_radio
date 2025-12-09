@@ -58,6 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     call_user_func_array([$stmt, 'bind_param'], array_merge([$params[0]], array_slice($params, 1)));
 
     if ($stmt->execute()) {
+        require_once 'log_helper.php';
+        log_action($_SESSION['user_id'], 'update', 'despesa', $id);
         header("Location: ../despesas.php?success=2");
     } else {
         header("Location: ../despesas.php?error=2");

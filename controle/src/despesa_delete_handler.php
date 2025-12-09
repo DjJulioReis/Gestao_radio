@@ -32,6 +32,8 @@ $stmt_delete = $conn->prepare("DELETE FROM despesas WHERE id = ?");
 $stmt_delete->bind_param("i", $id);
 
 if ($stmt_delete->execute()) {
+    require_once 'log_helper.php';
+    log_action($_SESSION['user_id'], 'delete', 'despesa', $id);
     header("Location: ../despesas.php?success=3");
 } else {
     header("Location: ../despesas.php?error=3");

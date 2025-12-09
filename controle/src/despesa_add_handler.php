@@ -30,6 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("sdssss", $descricao, $valor, $data_vencimento, $tipo, $observacao, $recibo_path);
 
     if ($stmt->execute()) {
+        $new_despesa_id = $conn->insert_id;
+        require_once 'log_helper.php';
+        log_action($_SESSION['user_id'], 'create', 'despesa', $new_despesa_id);
         header("Location: ../despesas.php?success=1");
     } else {
         header("Location: ../despesas.php?error=1");

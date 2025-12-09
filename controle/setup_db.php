@@ -44,13 +44,13 @@ $stmt->close();
 
 // Inserir dados de amostra para clientes
 $clientes_amostra = [
-    ['Padaria Pão Quente', '11.222.333/0001-44', 'contato@paoquente.com', '11987654321', 'Rua das Flores, 123', 0],
-    ['Supermercado Preço Bom', '22.333.444/0001-55', 'compras@precobom.com', '11912345678', 'Avenida Principal, 456', 500.00],
+    ['Padaria Pão Quente', '11.222.333/0001-44', 'contato@paoquente.com', '11987654321', 'Rua das Flores, 123', 0, 1, 1, 10],
+    ['Supermercado Preço Bom', '22.333.444/0001-55', 'compras@precobom.com', '11912345678', 'Avenida Principal, 456', 500.00, 1, 2, 10],
 ];
 
-$stmt_cliente = $conn->prepare("INSERT INTO clientes (empresa, cnpj_cpf, email, telefone, endereco, credito_permuta) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt_cliente = $conn->prepare("INSERT INTO clientes (empresa, cnpj_cpf, email, telefone, endereco, credito_permuta, data_cadastro, ativo, plano_id, data_vencimento) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)");
 foreach ($clientes_amostra as $cliente) {
-    $stmt_cliente->bind_param("sssssd", $cliente[0], $cliente[1], $cliente[2], $cliente[3], $cliente[4], $cliente[5]);
+    $stmt_cliente->bind_param("sssssdiii", $cliente[0], $cliente[1], $cliente[2], $cliente[3], $cliente[4], $cliente[5], $cliente[6], $cliente[7], $cliente[8]);
     $stmt_cliente->execute();
 }
 echo "Clientes de amostra inseridos.\n";
