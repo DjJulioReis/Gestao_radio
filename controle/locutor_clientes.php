@@ -71,25 +71,36 @@ $sql = "
     SELECT 
         l.nome AS locutor,
         c.empresa AS cliente,
-        c.data_vencimento,
         c.ativo,
         p.nome AS plano,
+        ct.data_fim AS data_vencimento,
         p.preco AS valor_plano,
-        (p.preco * 0.5) AS comissao,
-        c.data_cadastro
+        (p.preco * 0.5) AS comissao
     FROM clientes_locutores cl
     JOIN clientes c ON c.id = cl.cliente_id
     JOIN locutores l ON l.id = cl.locutor_id
-    JOIN planos p ON p.id = c.plano_id
-    ORDER BY l.nome, c.empresa
+    LEFT JOIN contratos ct ON ct.cliente_id = c.id AND ct.data_fim >= CURDATE()
+    LEFT JOIN planos p ON p.id = ct.plano_id
+    ORDER BY l.nome, c.empresa, ct.data_fim DESC
 ";
 
 $result = $conn->query($sql);
 
-if ($result->num_rows > 0) {
+if ($result && $result->num_rows > 0) {
 
-    echo "<table border='1' cellpadding='5' cellspacing='0'>
-            <thead>
+    $current_locutor = null;
+
+    echo "<table border='1' cellpadding='5' cellspacing='0' style='width:100%; border-collapse: collapse;'>";
+
+    while ($row = $result->fetch_assoc()) {
+        if ($row['locutor'] !== $current_locutor) {
+            if ($current_locutor !== null) {
+                echo "</tbody></table><br>"; // Fecha a tabela anterior
+            }
+            $current_locutor = $row['locutor'];
+            echo "<h3>" . htmlspecialchars($current_locutor) . "</h3>";
+            echo "<table border='1' cellpadding='5' cellspacing='0' style='width:100%; border-collapse: collapse;'>
+                    <thead>
                 <tr>
                     <th>Locutor</th>
                     <th>Cliente</th>
@@ -104,56 +115,49 @@ if ($result->num_rows > 0) {
         ";
 
     while ($row = $result->fetch_assoc()) {
-
-        // DIA DO VENCIMENTO
-        $venc = (int)$row['data_vencimento'];
-
-        // GERAR A DATA DE VENCIMENTO DESTE MÊS
-        $hoje = new DateTime();
-        $ano = $hoje->format("Y");
-        $mes = $hoje->format("m");
-
-        // Ajustar se o dia não existir (ex: fevereiro)
-        $dia_valido = min($venc, cal_days_in_month(CAL_GREGORIAN, $mes, $ano));
-
-        $data_vencimento = DateTime::createFromFormat("Y-m-d", "$ano-$mes-$dia_valido");
-
-        // Se já passou, gera do próximo mês
-        if ($data_vencimento < $hoje) {
-            $mes++;
-            if ($mes > 12) {
-                $mes = 1;
-                $ano++;
+        if ($row['locutor'] !== $current_locutor) {
+            if ($current_locutor !== null) {
+                echo "</tbody></table><br>"; // Fecha a tabela anterior
             }
-            $dia_valido = min($venc, cal_days_in_month(CAL_GREGORIAN, $mes, $ano));
-            $data_vencimento = DateTime::createFromFormat("Y-m-d", "$ano-$mes-$dia_valido");
+            $current_locutor = $row['locutor'];
+            echo "<h3>" . htmlspecialchars($current_locutor) . "</h3>";
+            echo "<table border='1' cellpadding='5' cellspacing='0' style='width:100%; border-collapse: collapse;'>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Plano</th>
+                            <th>Valor</th>
+                            <th>Comissão</th>
+                            <th>Vencimento do Contrato</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>";
         }
 
-        // CALCULAR STATUS
-        $dias_restantes = (int)$hoje->diff($data_vencimento)->format("%r%a");
-
+        // Lógica de Status Simplificada
+        $status = '';
         if ($row['ativo'] == 0) {
             $status = "<span style='color:gray;font-weight:bold;'>INATIVO</span>";
-        } elseif ($dias_restantes < 0) {
-            $status = "<span style='color:red;font-weight:bold;'>ATRASADO</span>";
-        } elseif ($dias_restantes == 0) {
-            $status = "<span style='color:orange;font-weight:bold;'>VENCE HOJE</span>";
-        } elseif ($dias_restantes <= 5) {
-            $status = "<span style='color:#c49a00;font-weight:bold;'>VENCE EM BREVE</span>";
+        } elseif (empty($row['plano'])) {
+            $status = "<span style='color:orange;font-weight:bold;'>SEM CONTRATO</span>";
         } else {
-            $status = "<span style='color:green;font-weight:bold;'>OK</span>";
+            $status = "<span style='color:green;font-weight:bold;'>ATIVO</span>";
         }
 
         echo "
         <tr>
-            <td>{$row['locutor']}</td>
-            <td>{$row['cliente']}</td>
-            <td>{$row['plano']}</td>
-            <td>R$ " . number_format($row['valor_plano'], 2, ',', '.') . "</td>
-            <td>R$ " . number_format($row['comissao'], 2, ',', '.') . "</td>
-            <td>{$row['data_vencimento']}</td>
+            <td>" . htmlspecialchars($row['cliente']) . "</td>
+            <td>" . htmlspecialchars($row['plano'] ?? 'N/A') . "</td>
+            <td>R$ " . number_format($row['valor_plano'] ?? 0, 2, ',', '.') . "</td>
+            <td>R$ " . number_format($row['comissao'] ?? 0, 2, ',', '.') . "</td>
+            <td>" . ($row['data_vencimento'] ? date("d/m/Y", strtotime($row['data_vencimento'])) : 'N/A') . "</td>
             <td>{$status}</td>
         </tr>";
+    }
+
+    if ($current_locutor !== null) {
+        echo "</tbody></table>"; // Fecha a última tabela
     }
 
     echo "</tbody></table>";

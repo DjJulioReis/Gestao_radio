@@ -107,7 +107,7 @@ if($result->num_rows > 0){
                         <td><?=$row['referencia'];?></td>
                         <td>R$ <?=number_format($valorExibir,2,",",".");?></td>
                         <td>R$ <?=number_format($row['credito_permuta'],2,",",".");?></td>
-                        <td><?=$status;?></td>
+                        <td><?=$status_texto;?></td>
                         <td>
                             <?php if(!$row['pago']): ?>
                                 <a href="quitar.php?id=<?=$row['cobranca_id'];?>" 
