@@ -43,6 +43,11 @@ if($result->num_rows > 0){
     }
 }
 ?>
+<style>
+    .status-pago { background-color: #d4edda; color: #155724; }
+    .status-a-receber { background-color: #fff3cd; color: #856404; }
+    .status-em-atraso { background-color: #f8d7da; color: #721c24; }
+</style>
 <div class="container">
     <h2>Financeiro - Cobranças</h2>
 <a href="dashboard.php">Voltar para o Inicio</a>
@@ -78,11 +83,25 @@ if($result->num_rows > 0){
                             }
                         }
 
-                        $status = $row['pago']
-                            ? '<span style="color:green;font-weight:bold;">Pago</span>'
-                            : '<span style="color:red;font-weight:bold;">Aberto</span>';
+                        $status_classe = '';
+                        $status_texto = '';
+                        $hoje = new DateTime();
+                        $data_referencia = new DateTime($row['referencia'] . '-01');
+                        // Vencimento no dia 10 do mês de referência
+                        $data_vencimento = new DateTime($data_referencia->format('Y-m-10'));
+
+                        if ($row['pago']) {
+                            $status_classe = 'status-pago';
+                            $status_texto = 'Pago';
+                        } elseif ($hoje > $data_vencimento) {
+                            $status_classe = 'status-em-atraso';
+                            $status_texto = 'Em Atraso';
+                        } else {
+                            $status_classe = 'status-a-receber';
+                            $status_texto = 'A Receber';
+                        }
                     ?>
-                    <tr style="border-bottom:1px solid #ccc;">
+                    <tr class="<?=$status_classe;?>" style="border-bottom:1px solid #ccc;">
                         <td><?=htmlspecialchars($row['empresa']);?></td>
                         <td><?=htmlspecialchars($row['plano_nome']);?></td>
                         <td><?=$row['referencia'];?></td>

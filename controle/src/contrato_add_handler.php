@@ -27,7 +27,34 @@ $stmt->bind_param("iiss", $cliente_id, $plano_id, $data_inicio, $data_fim);
 
 if ($stmt->execute()) {
     $contrato_id = $stmt->insert_id;
-    // Lógica futura de geração de cobranças pode ser adicionada aqui
+
+    // Busca o valor do plano para usar na cobrança
+    $stmt_plano = $conn->prepare("SELECT preco FROM planos WHERE id = ?");
+    $stmt_plano->bind_param("i", $plano_id);
+    $stmt_plano->execute();
+    $result_plano = $stmt_plano->get_result();
+    $plano = $result_plano->fetch_assoc();
+    $valor_plano = $plano['preco'];
+    $stmt_plano->close();
+
+    // Lógica para gerar cobranças mensais
+    $inicio = new DateTime($data_inicio);
+    $fim = new DateTime($data_fim);
+    // Adiciona um dia ao fim para incluir o último mês no loop
+    $fim->modify('+1 day');
+    $intervalo = new DateInterval('P1M');
+    $periodo = new DatePeriod($inicio, $intervalo, $fim);
+
+    $stmt_cobranca = $conn->prepare(
+        "INSERT INTO cobrancas (contrato_id, cliente_id, plano_id, valor, referencia) VALUES (?, ?, ?, ?, ?)"
+    );
+
+    foreach ($periodo as $data) {
+        $referencia = $data->format('Y-m');
+        $stmt_cobranca->bind_param("iiids", $contrato_id, $cliente_id, $plano_id, $valor_plano, $referencia);
+        $stmt_cobranca->execute();
+    }
+    $stmt_cobranca->close();
 
     // Redireciona para a lista de contratos com sucesso
     header("Location: ../contratos.php?success=1");
