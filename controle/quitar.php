@@ -34,13 +34,13 @@ if($permuta > 0){
     $stmt2->execute();
 }
 
-// Quitar cobrança
-if($valor == 0){
-    $stmt3 = $conn->prepare("UPDATE cobrancas SET pago=1, data_pagamento=NOW() WHERE id=?");
-    $stmt3->bind_param("i",$id);
-    $stmt3->execute();
+// Sempre quitar a cobrança, independentemente da permuta
+$stmt3 = $conn->prepare("UPDATE cobrancas SET pago=1, data_pagamento=NOW() WHERE id=?");
+$stmt3->bind_param("i",$id);
+$stmt3->execute();
 
-    // Enviar e-mail de confirmação
+// Enviar e-mail de confirmação apenas se o pagamento foi efetivamente processado
+if ($stmt3->affected_rows > 0) {
     $assunto = "Pagamento Confirmado – $referencia";
     $mensagem = "
         <h2>Olá, {$cobranca['empresa']}!</h2>
