@@ -1,4 +1,7 @@
 <?php 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require_once 'init.php';
 $page_title = "Associar Clientes a Locutores";
 require_once 'templates/header.php';
@@ -101,28 +104,6 @@ if ($result && $result->num_rows > 0) {
             echo "<h3>" . htmlspecialchars($current_locutor) . "</h3>";
             echo "<table border='1' cellpadding='5' cellspacing='0' style='width:100%; border-collapse: collapse;'>
                     <thead>
-                <tr>
-                    <th>Locutor</th>
-                    <th>Cliente</th>
-                    <th>Plano</th>
-                    <th>Valor</th>
-                    <th>Comissão</th>
-                    <th>Vencimento</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-        ";
-
-    while ($row = $result->fetch_assoc()) {
-        if ($row['locutor'] !== $current_locutor) {
-            if ($current_locutor !== null) {
-                echo "</tbody></table><br>"; // Fecha a tabela anterior
-            }
-            $current_locutor = $row['locutor'];
-            echo "<h3>" . htmlspecialchars($current_locutor) . "</h3>";
-            echo "<table border='1' cellpadding='5' cellspacing='0' style='width:100%; border-collapse: collapse;'>
-                    <thead>
                         <tr>
                             <th>Cliente</th>
                             <th>Plano</th>
@@ -139,29 +120,28 @@ if ($result && $result->num_rows > 0) {
         $status = '';
         if ($row['ativo'] == 0) {
             $status = "<span style='color:gray;font-weight:bold;'>INATIVO</span>";
-        } elseif (empty($row['plano'])) {
+        } elseif (empty($row['plano']) || is_null($row['plano'])) {
             $status = "<span style='color:orange;font-weight:bold;'>SEM CONTRATO</span>";
         } else {
             $status = "<span style='color:green;font-weight:bold;'>ATIVO</span>";
         }
 
+        // Formatação de valores
+        $valor_plano = $row['valor_plano'] ?? 0;
+        $comissao = $row['comissao'] ?? 0;
+
         echo "
         <tr>
             <td>" . htmlspecialchars($row['cliente']) . "</td>
             <td>" . htmlspecialchars($row['plano'] ?? 'N/A') . "</td>
-            <td>R$ " . number_format($row['valor_plano'] ?? 0, 2, ',', '.') . "</td>
-            <td>R$ " . number_format($row['comissao'] ?? 0, 2, ',', '.') . "</td>
+            <td>R$ " . number_format($valor_plano, 2, ',', '.') . "</td>
+            <td>R$ " . number_format($comissao, 2, ',', '.') . "</td>
             <td>" . ($row['data_vencimento'] ? date("d/m/Y", strtotime($row['data_vencimento'])) : 'N/A') . "</td>
             <td>{$status}</td>
         </tr>";
     }
 
-    if ($current_locutor !== null) {
-        echo "</tbody></table>"; // Fecha a última tabela
-    }
-
     echo "</tbody></table>";
-
 } else {
     echo "<p>Nenhuma associação encontrada.</p>";
 }
