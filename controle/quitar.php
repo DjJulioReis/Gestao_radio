@@ -1,6 +1,6 @@
 <?php
 require_once 'init.php';
-require_once 'email_config.php';
+require_once 'email_config2.php';
 
 $id = intval($_GET['id']);
 
