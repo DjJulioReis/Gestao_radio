@@ -1,7 +1,7 @@
-    <?php
-    require_once '../../mailer/PHPMailer.php';
-    require_once '../../mailer/Exception.php';
-    require_once '../../mailer/SMTP.php';
+<?php
+    require_once __DIR__ . '/../../mailer/PHPMailer.php';
+    require_once __DIR__ . '/../../mailer/Exception.php';
+    require_once __DIR__ . '/../../mailer/SMTP.php';
 
     use PHPMailer\PHPMailer\PHPMailer;
     use PHPMailer\PHPMailer\Exception;
@@ -12,10 +12,10 @@ function enviarEmail($destinatario, $assunto, $mensagemHtml) {
     try {
         // SMTP
         $mail->isSMTP();
-        $mail->Host = "mail.novafm875.com.br";  // ALTERE
+        $mail->Host = "mail.novafm875.com.br";
         $mail->SMTPAuth = true;
-        $mail->Username = "no-reply@novafm875.com.br"; // ALTERE
-        $mail->Password = "Nf9jxjaxf2sf24TfquaQ";      // ALTERE
+        $mail->Username = "no-reply@novafm875.com.br";
+        $mail->Password = "Nf9jxjaxf2sf24TfquaQ";
         $mail->Port = 587;
         $mail->CharSet = "UTF-8";
 
