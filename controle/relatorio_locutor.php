@@ -31,15 +31,14 @@ if ($locutor_id) {
         FROM clientes_locutores cl
         JOIN clientes c ON c.id = cl.cliente_id
         JOIN locutores l ON l.id = cl.locutor_id
-        JOIN contratos ct ON ct.cliente_id = c.id
-        JOIN planos p ON p.id = ct.plano_id
-        WHERE l.id = ? AND MONTH(ct.data_inicio) <= ? AND YEAR(ct.data_inicio) <= ?
-        AND MONTH(ct.data_fim) >= ? AND YEAR(ct.data_fim) >= ?
+        LEFT JOIN contratos ct ON ct.cliente_id = c.id AND MONTH(ct.data_inicio) <= ? AND YEAR(ct.data_inicio) <= ? AND MONTH(ct.data_fim) >= ? AND YEAR(ct.data_fim) >= ?
+        LEFT JOIN planos p ON p.id = ct.plano_id
+        WHERE l.id = ?
         ORDER BY c.empresa
     ";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iiiii", $locutor_id, $mes, $ano, $mes, $ano);
+    $stmt->bind_param("iiiii", $mes, $ano, $mes, $ano, $locutor_id);
     $stmt->execute();
     $result = $stmt->get_result();
 

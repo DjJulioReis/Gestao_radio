@@ -27,7 +27,22 @@ $stmt_saidas->execute();
 $total_saidas = $stmt_saidas->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt_saidas->close();
 
-$lucro = $total_entradas - $total_saidas;
+// Comissões (Saída Adicional)
+$stmt_comissoes = $conn->prepare("
+    SELECT SUM(p.preco * 0.5) as total
+    FROM cobrancas cb
+    JOIN contratos ct ON cb.contrato_id = ct.id
+    JOIN planos p ON ct.plano_id = p.id
+    JOIN clientes_locutores cl ON ct.cliente_id = cl.cliente_id
+    WHERE cb.pago = 1 AND MONTH(cb.data_pagamento) = ? AND YEAR(cb.data_pagamento) = ?
+");
+$stmt_comissoes->bind_param("ii", $mes, $ano);
+$stmt_comissoes->execute();
+$total_comissoes = $stmt_comissoes->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt_comissoes->close();
+
+$total_saidas_final = $total_saidas + $total_comissoes;
+$lucro = $total_entradas - $total_saidas_final;
 ?>
 
 <h1><?php echo $page_title; ?></h1>
@@ -54,7 +69,11 @@ $lucro = $total_entradas - $total_saidas;
 <div class="summary">
     <h2>Resumo para <?php echo strftime('%B', mktime(0, 0, 0, $mes, 1)); ?> de <?php echo $ano; ?></h2>
     <p><strong>Total de Entradas:</strong> <span style="color: green;">R$ <?php echo number_format($total_entradas, 2, ',', '.'); ?></span></p>
-    <p><strong>Total de Saídas:</strong> <span style="color: red;">R$ <?php echo number_format($total_saidas, 2, ',', '.'); ?></span></p>
+    <hr>
+    <p><strong>Saídas (Despesas):</strong> <span style="color: red;">R$ <?php echo number_format($total_saidas, 2, ',', '.'); ?></span></p>
+    <p><strong>Saídas (Comissões):</strong> <span style="color: red;">R$ <?php echo number_format($total_comissoes, 2, ',', '.'); ?></span></p>
+    <p><strong>Total de Saídas:</strong> <span style="color: darkred; font-weight: bold;">R$ <?php echo number_format($total_saidas_final, 2, ',', '.'); ?></span></p>
+    <hr>
     <p><strong>Lucro/Prejuízo:</strong> <span style="color: <?php echo ($lucro >= 0) ? 'blue;' : 'darkred;'; ?>; font-weight: bold;">R$ <?php echo number_format($lucro, 2, ',', '.'); ?></span></p>
 </div>
 
