@@ -27,6 +27,11 @@ $planos = $conn->query("SELECT id, nome FROM planos ORDER BY nome");
     </div>
 
     <div class="form-group">
+        <label for="identificacao">Identificação do Contrato (Opcional)</label>
+        <input type="text" name="identificacao" id="identificacao" class="form-control" placeholder="Ex: Contrato de Natal, Pacote de Férias">
+    </div>
+
+    <div class="form-group">
         <label for="plano_id">Plano</label>
         <select name="plano_id" id="plano_id" class="form-control" required>
             <option value="">-- Selecione um Plano --</option>

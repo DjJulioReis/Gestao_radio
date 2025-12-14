@@ -10,6 +10,7 @@ if ($_SESSION['user_level'] !== 'admin' || $_SERVER['REQUEST_METHOD'] !== 'POST'
 // Validação dos dados recebidos
 $cliente_id = filter_input(INPUT_POST, 'cliente_id', FILTER_VALIDATE_INT);
 $plano_id = filter_input(INPUT_POST, 'plano_id', FILTER_VALIDATE_INT);
+$identificacao = trim(filter_input(INPUT_POST, 'identificacao', FILTER_SANITIZE_STRING));
 $data_inicio = $_POST['data_inicio']; // Adicionar validação de data se necessário
 $data_fim = $_POST['data_fim'];       // Adicionar validação de data se necessário
 
@@ -21,9 +22,9 @@ if (!$cliente_id || !$plano_id || empty($data_inicio) || empty($data_fim)) {
 
 // Prepara e executa a query de inserção
 $stmt = $conn->prepare(
-    "INSERT INTO contratos (cliente_id, plano_id, data_inicio, data_fim) VALUES (?, ?, ?, ?)"
+    "INSERT INTO contratos (cliente_id, plano_id, identificacao, data_inicio, data_fim) VALUES (?, ?, ?, ?, ?)"
 );
-$stmt->bind_param("iiss", $cliente_id, $plano_id, $data_inicio, $data_fim);
+$stmt->bind_param("iisss", $cliente_id, $plano_id, $identificacao, $data_inicio, $data_fim);
 
 if ($stmt->execute()) {
     $contrato_id = $stmt->insert_id;

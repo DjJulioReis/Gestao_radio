@@ -45,6 +45,7 @@ CREATE TABLE `tipos_anuncio` (
 
 CREATE TABLE `contratos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `identificacao` varchar(255) DEFAULT NULL,
   `cliente_id` int(11) NOT NULL,
   `plano_id` int(11) NOT NULL,
   `data_inicio` date NOT NULL,

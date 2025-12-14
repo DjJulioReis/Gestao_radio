@@ -156,9 +156,9 @@ if (!isset($_SESSION['user_id'])) {
         <h2 style="margin-top: 40px;">Relatórios</h2>
         <div class="grid-container reports-section">
             <div class="card">
-                <h3>Relatório Mensal</h3>
-                <p>Visualize o balanço de entradas e saídas do mês.</p>
-                <a href="relatorio_mensal.php">Gerar</a>
+                <h3>Relatório Financeiro</h3>
+                <p>Visualize o balanço de entradas, saídas e lucro.</p>
+                <a href="relatorio_financeiro.php">Gerar</a>
             </div>
             <div class="card">
                 <h3>Relatório de Parcerias</h3>
@@ -166,9 +166,19 @@ if (!isset($_SESSION['user_id'])) {
                 <a href="relatorio_parcerias.php">Gerar</a>
             </div>
             <div class="card">
-                <h3>Comissões de Locutores</h3>
-                <p>Calcule e visualize as comissões mensais dos locutores.</p>
-                <a href="relatorio_locutores.php">Gerar</a>
+                <h3>Relatório de Locutor</h3>
+                <p>Visualize as comissões e clientes de um locutor.</p>
+                <a href="relatorio_locutor.php">Gerar</a>
+            </div>
+            <div class="card">
+                <h3>Relatório de Débitos</h3>
+                <p>Liste todos os clientes com faturas pendentes.</p>
+                <a href="relatorio_debitos.php">Gerar</a>
+            </div>
+            <div class="card">
+                <h3>Apoio Cultural</h3>
+                <p>Relatório de projetos e seus apoiadores.</p>
+                <a href="relatorio_apoio_cultural.php">Gerar</a>
             </div>
         </div>
     </div>

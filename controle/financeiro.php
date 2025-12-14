@@ -29,19 +29,12 @@ INNER JOIN planos p ON cb.plano_id = p.id
 ORDER BY cb.pago ASC, cb.referencia DESC
 ";
 $result = $conn->query($sql);
+$lista = ($result->num_rows > 0) ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
-// Totais
-$totalAberto = $totalPago = $totalPermuta = 0;
-$lista = [];
-if($result->num_rows > 0){
-    while($row = $result->fetch_assoc()){
-        $lista[] = $row;
-        if($row['pago']) $totalPago += $row['valor'];
-        else $totalAberto += $row['valor'];
-
-        $totalPermuta += $row['credito_permuta'];
-    }
-}
+// Cálculos de totais otimizados
+$totalAberto = $conn->query("SELECT SUM(valor) AS total FROM cobrancas WHERE pago = 0")->fetch_assoc()['total'] ?? 0;
+$totalPago = $conn->query("SELECT SUM(valor) AS total FROM cobrancas WHERE pago = 1")->fetch_assoc()['total'] ?? 0;
+$totalPermuta = $conn->query("SELECT SUM(credito_permuta) AS total FROM clientes")->fetch_assoc()['total'] ?? 0;
 ?>
 <style>
     .status-pago { background-color: #d4edda; color: #155724; }

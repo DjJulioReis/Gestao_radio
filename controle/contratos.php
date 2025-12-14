@@ -6,6 +6,7 @@ require_once __DIR__ . '/templates/header.php';
 $sql = "
     SELECT
         ct.id,
+        ct.identificacao,
         c.empresa AS cliente_nome,
         p.nome AS plano_nome,
         ct.data_inicio,
@@ -28,6 +29,7 @@ $result = $conn->query($sql);
 <table>
     <thead>
         <tr>
+            <th>Identificação</th>
             <th>Cliente</th>
             <th>Plano</th>
             <th>Data de Início</th>
@@ -41,6 +43,7 @@ $result = $conn->query($sql);
         <?php if ($result->num_rows > 0): ?>
             <?php while($row = $result->fetch_assoc()): ?>
                 <tr>
+                    <td><?php echo htmlspecialchars($row['identificacao'] ?: 'N/A'); ?></td>
                     <td><?php echo htmlspecialchars($row['cliente_nome']); ?></td>
                     <td><?php echo htmlspecialchars($row['plano_nome']); ?></td>
                     <td><?php echo date("d/m/Y", strtotime($row['data_inicio'])); ?></td>
@@ -55,7 +58,7 @@ $result = $conn->query($sql);
             <?php endwhile; ?>
         <?php else: ?>
             <tr>
-                <td colspan="<?php echo ($_SESSION['user_level'] === 'admin') ? '5' : '4'; ?>">Nenhum contrato cadastrado.</td>
+                <td colspan="<?php echo ($_SESSION['user_level'] === 'admin') ? '6' : '5'; ?>">Nenhum contrato cadastrado.</td>
             </tr>
         <?php endif; ?>
     </tbody>
