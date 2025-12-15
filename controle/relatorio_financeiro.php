@@ -17,8 +17,17 @@ $ano = filter_input(INPUT_GET, 'ano', FILTER_VALIDATE_INT, ['options' => ['defau
 $stmt_entradas = $conn->prepare("SELECT SUM(valor) as total FROM cobrancas WHERE pago = 1 AND MONTH(data_pagamento) = ? AND YEAR(data_pagamento) = ?");
 $stmt_entradas->bind_param("ii", $mes, $ano);
 $stmt_entradas->execute();
-$total_entradas = $stmt_entradas->get_result()->fetch_assoc()['total'] ?? 0;
+$total_entradas_cobrancas = $stmt_entradas->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt_entradas->close();
+
+// Entradas (Investimentos)
+$stmt_investimentos = $conn->prepare("SELECT SUM(valor) as total FROM investimentos_socios WHERE MONTH(data) = ? AND YEAR(data) = ?");
+$stmt_investimentos->bind_param("ii", $mes, $ano);
+$stmt_investimentos->execute();
+$total_investimentos = $stmt_investimentos->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt_investimentos->close();
+
+$total_entradas = $total_entradas_cobrancas + $total_investimentos;
 
 // Saídas (Despesas Pagas)
 $stmt_saidas = $conn->prepare("SELECT SUM(valor) as total FROM despesas WHERE pago = 1 AND MONTH(data_vencimento) = ? AND YEAR(data_vencimento) = ?");
@@ -68,7 +77,9 @@ $lucro = $total_entradas - $total_saidas_final;
 
 <div class="summary">
     <h2>Resumo para <?php echo strftime('%B', mktime(0, 0, 0, $mes, 1)); ?> de <?php echo $ano; ?></h2>
-    <p><strong>Total de Entradas:</strong> <span style="color: green;">R$ <?php echo number_format($total_entradas, 2, ',', '.'); ?></span></p>
+    <p><strong>Entradas (Cobranças):</strong> <span style="color: green;">R$ <?php echo number_format($total_entradas_cobrancas, 2, ',', '.'); ?></span></p>
+    <p><strong>Entradas (Investimentos):</strong> <span style="color: green;">R$ <?php echo number_format($total_investimentos, 2, ',', '.'); ?></span></p>
+    <p><strong>Total de Entradas:</strong> <span style="color: darkgreen; font-weight: bold;">R$ <?php echo number_format($total_entradas, 2, ',', '.'); ?></span></p>
     <hr>
     <p><strong>Saídas (Despesas):</strong> <span style="color: red;">R$ <?php echo number_format($total_saidas, 2, ',', '.'); ?></span></p>
     <p><strong>Saídas (Comissões):</strong> <span style="color: red;">R$ <?php echo number_format($total_comissoes, 2, ',', '.'); ?></span></p>

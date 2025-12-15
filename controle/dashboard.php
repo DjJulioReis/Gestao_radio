@@ -150,6 +150,11 @@ if (!isset($_SESSION['user_id'])) {
                 <p>Gerencie projetos culturais e seus respectivos apoiadores.</p>
                 <a href="apoios_culturais.php">Acessar</a>
             </div>
+            <div class="card">
+                <h3>Investimentos de Sócios</h3>
+                <p>Gerencie os investimentos externos dos sócios.</p>
+                <a href="investimentos_socios.php">Acessar</a>
+            </div>
         </div>
         
 

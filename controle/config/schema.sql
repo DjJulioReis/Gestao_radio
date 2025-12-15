@@ -86,6 +86,8 @@ CREATE TABLE `locutores` (
   `nome` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `telefone` varchar(15) NOT NULL,
+  `reinvestir_comissao` tinyint(1) NOT NULL DEFAULT 1,
+  `saldo_investido` decimal(10,2) NOT NULL DEFAULT 0.00,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 );
@@ -140,4 +142,16 @@ CREATE TABLE `apoios_clientes` (
   `data_apoio` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`apoio_id`) REFERENCES `apoios_culturais`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `investimentos_socios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `locutor_id` int(11) NOT NULL,
+  `valor` decimal(10,2) NOT NULL,
+  `data` date NOT NULL,
+  `descricao` varchar(255) DEFAULT NULL,
+  `reembolsado` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `locutor_id` (`locutor_id`),
+  CONSTRAINT `investimentos_socios_ibfk_1` FOREIGN KEY (`locutor_id`) REFERENCES `locutores` (`id`) ON DELETE CASCADE
 );

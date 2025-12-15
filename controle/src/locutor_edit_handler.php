@@ -10,9 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id = $_POST['id'];
     $nome = $_POST['nome'];
     $email = $_POST['email'];
+    $telefone = $_POST['telefone'];
+    $reinvestir = isset($_POST['reinvestir_comissao']) ? 1 : 0;
 
-    $stmt = $conn->prepare("UPDATE locutores SET nome = ?, email = ? WHERE id = ?");
-    $stmt->bind_param("ssi", $nome, $email, $id);
+    $stmt = $conn->prepare("UPDATE locutores SET nome = ?, email = ?, telefone = ?, reinvestir_comissao = ? WHERE id = ?");
+    $stmt->bind_param("sssii", $nome, $email, $telefone, $reinvestir, $id);
 
     if ($stmt->execute()) {
         header("Location: ../locutores.php?success=2");

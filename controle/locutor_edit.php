@@ -37,6 +37,12 @@ $locutor = $result->fetch_assoc();
         <label for="email">Telefone</label>
         <input type="telefone" name="telefone" id="telefone" value="<?php echo htmlspecialchars($locutor['telefone']); ?>" required>
     </div>
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="reinvestir_comissao" value="1" <?php echo ($locutor['reinvestir_comissao'] ?? 0) ? 'checked' : ''; ?>>
+            Reinvestir comissão automaticamente
+        </label>
+    </div>
     <button type="submit">Salvar Alterações</button>
     <a href="locutores.php" class="cancel-link">Cancelar</a>
 </form>

@@ -3,7 +3,7 @@ require_once 'init.php';
 $page_title = "Gestão de Locutores";
 require_once 'templates/header.php';
 
-$sql = "SELECT id, nome, email, telefone FROM locutores ORDER BY nome";
+$sql = "SELECT id, nome, email, telefone, reinvestir_comissao, saldo_investido FROM locutores ORDER BY nome";
 $result = $conn->query($sql);
 ?>
 
@@ -20,6 +20,8 @@ $result = $conn->query($sql);
             <th>Nome</th>
             <th>Email</th>
             <th>Telefone</th>
+            <th>Reinvestir Comissão</th>
+            <th>Saldo Investido</th>
             <?php if ($_SESSION['user_level'] === 'admin'): ?>
                 <th>Ações</th>
             <?php endif; ?>
@@ -32,6 +34,10 @@ $result = $conn->query($sql);
                     <td><?php echo htmlspecialchars($row['nome']); ?></td>
                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                     <td><?php echo isset($row['telefone']) ? htmlspecialchars($row['telefone']) : 'Não informado'; ?></td>
+                    <td>
+                        <input type="checkbox" disabled <?php echo $row['reinvestir_comissao'] ? 'checked' : ''; ?>>
+                    </td>
+                    <td>R$ <?php echo number_format($row['saldo_investido'], 2, ',', '.'); ?></td>
                     <?php if ($_SESSION['user_level'] === 'admin'): ?>
                         <td class="actions">
                             <a href="locutor_edit.php?id=<?php echo $row['id']; ?>">Editar</a>
@@ -42,7 +48,7 @@ $result = $conn->query($sql);
             <?php endwhile; ?>
         <?php else: ?>
             <tr>
-                <td colspan="<?php echo ($_SESSION['user_level'] === 'admin') ? '3' : '2'; ?>">Nenhum locutor cadastrado.</td>
+                <td colspan="<?php echo ($_SESSION['user_level'] === 'admin') ? '5' : '4'; ?>">Nenhum locutor cadastrado.</td>
             </tr>
         <?php endif; ?>
     </tbody>
