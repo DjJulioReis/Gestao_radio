@@ -126,14 +126,19 @@ if (!isset($_SESSION['user_id'])) {
                 <a href="despesas.php">Acessar</a>
             </div>
             <div class="card">
-                <h3>Locutores</h3>
-                <p>Gerencie os locutores e suas associações com clientes.</p>
-                <a href="locutores.php">Acessar</a>
+                <h3>Colaboradores</h3>
+                <p>Gerencie os colaboradores e suas funções na rádio.</p>
+                <a href="colaboradores.php">Acessar</a>
+            </div>
+            <div class="card">
+                <h3>Sócios</h3>
+                <p>Gerencie o status de reinvestimento e os investimentos dos sócios.</p>
+                <a href="socios.php">Acessar</a>
             </div>
              <div class="card">
                 <h3>Associar Clientes</h3>
-                <p>Associe clientes a locutores para o cálculo de comissões.</p>
-                <a href="locutor_clientes.php">Acessar</a>
+                <p>Associe clientes a colaboradores para o cálculo de comissões.</p>
+                <a href="cliente_colaboradores.php">Acessar</a>
             </div>
             <div class="card">
             <h3>Financeiro</h3>

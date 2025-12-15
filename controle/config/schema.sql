@@ -81,22 +81,34 @@ CREATE TABLE `despesas` (
     `recibo_path` VARCHAR(255) DEFAULT NULL
 );
 
-CREATE TABLE `locutores` (
+CREATE TABLE `colaboradores` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nome` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `telefone` varchar(15) NOT NULL,
-  `reinvestir_comissao` tinyint(1) NOT NULL DEFAULT 1,
-  `saldo_investido` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `funcao` enum('locutor','socio','socio_locutor','parceiro') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 );
 
-CREATE TABLE `clientes_locutores` (
+CREATE TABLE `socios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `colaborador_id` int(11) NOT NULL,
+  `reinvestir_comissao` tinyint(1) NOT NULL DEFAULT 1,
+  `saldo_investido` decimal(10,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `colaborador_id` (`colaborador_id`),
+  CONSTRAINT `socios_ibfk_1` FOREIGN KEY (`colaborador_id`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `cliente_colaboradores` (
   `cliente_id` int(11) NOT NULL,
-  `locutor_id` int(11) NOT NULL,
-  PRIMARY KEY (`cliente_id`,`locutor_id`),
-  KEY `locutor_id` (`locutor_id`)
+  `colaborador_id` int(11) NOT NULL,
+  `percentual_comissao` decimal(5,2) NOT NULL DEFAULT 50.00,
+  PRIMARY KEY (`cliente_id`,`colaborador_id`),
+  KEY `colaborador_id` (`colaborador_id`),
+  CONSTRAINT `cliente_colaboradores_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cliente_colaboradores_ibfk_2` FOREIGN KEY (`colaborador_id`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `logs` (
@@ -110,9 +122,6 @@ CREATE TABLE `logs` (
 );
 
 
-ALTER TABLE `clientes_locutores`
-  ADD CONSTRAINT `clientes_locutores_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
-  ADD CONSTRAINT `clientes_locutores_ibfk_2` FOREIGN KEY (`locutor_id`) REFERENCES `locutores` (`id`);
 
 ALTER TABLE `cobrancas`
   ADD CONSTRAINT `cobrancas_ibfk_1` FOREIGN KEY (`contrato_id`) REFERENCES `contratos` (`id`),
@@ -146,12 +155,12 @@ CREATE TABLE `apoios_clientes` (
 
 CREATE TABLE `investimentos_socios` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `locutor_id` int(11) NOT NULL,
+  `socio_id` int(11) NOT NULL,
+  `tipo` enum('investimento','retirada') NOT NULL,
   `valor` decimal(10,2) NOT NULL,
   `data` date NOT NULL,
   `descricao` varchar(255) DEFAULT NULL,
-  `reembolsado` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  KEY `locutor_id` (`locutor_id`),
-  CONSTRAINT `investimentos_socios_ibfk_1` FOREIGN KEY (`locutor_id`) REFERENCES `locutores` (`id`) ON DELETE CASCADE
+  KEY `socio_id` (`socio_id`),
+  CONSTRAINT `investimentos_socios_ibfk_1` FOREIGN KEY (`socio_id`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE
 );
