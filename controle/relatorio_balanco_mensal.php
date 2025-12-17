@@ -27,7 +27,7 @@ $total_entradas = $result_entradas->fetch_assoc()['total'] ?? 0;
 $stmt_entradas->close();
 
 // 2. Calcular Saídas (Despesas Pagas)
-$sql_saidas = "SELECT SUM(valor) AS total FROM despesas WHERE pago = 1 AND data_pagamento BETWEEN ? AND ?";
+$sql_saidas = "SELECT SUM(valor) AS total FROM despesas WHERE pago = 1 AND data_vencimento BETWEEN ? AND ?";
 $stmt_saidas = $conn->prepare($sql_saidas);
 $stmt_saidas->bind_param("ss", $primeiro_dia, $ultimo_dia);
 $stmt_saidas->execute();
@@ -57,7 +57,7 @@ while ($row = $result_entradas_dia->fetch_assoc()) {
 $stmt_entradas_dia->close();
 
 // Saídas por dia
-$sql_saidas_dia = "SELECT DAY(data_pagamento) AS dia, SUM(valor) AS total FROM despesas WHERE pago = 1 AND data_pagamento BETWEEN ? AND ? GROUP BY dia ORDER BY dia";
+$sql_saidas_dia = "SELECT DAY(data_vencimento) AS dia, SUM(valor) AS total FROM despesas WHERE pago = 1 AND data_vencimento BETWEEN ? AND ? GROUP BY dia ORDER BY dia";
 $stmt_saidas_dia = $conn->prepare($sql_saidas_dia);
 $stmt_saidas_dia->bind_param("ss", $primeiro_dia, $ultimo_dia);
 $stmt_saidas_dia->execute();

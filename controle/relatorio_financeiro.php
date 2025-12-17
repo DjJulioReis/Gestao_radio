@@ -20,8 +20,8 @@ $stmt_entradas->execute();
 $total_entradas_cobrancas = $stmt_entradas->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt_entradas->close();
 
-// Entradas (Investimentos)
-$stmt_investimentos = $conn->prepare("SELECT SUM(valor) as total FROM investimentos_socios WHERE MONTH(data) = ? AND YEAR(data) = ?");
+// Entradas (Investimentos de Sócios)
+$stmt_investimentos = $conn->prepare("SELECT SUM(valor) as total FROM investimentos_socios WHERE tipo = 'investimento' AND MONTH(data) = ? AND YEAR(data) = ?");
 $stmt_investimentos->bind_param("ii", $mes, $ano);
 $stmt_investimentos->execute();
 $total_investimentos = $stmt_investimentos->get_result()->fetch_assoc()['total'] ?? 0;
@@ -38,11 +38,10 @@ $stmt_saidas->close();
 
 // Comissões (Saída Adicional)
 $stmt_comissoes = $conn->prepare("
-    SELECT SUM(p.preco * 0.5) as total
+    SELECT SUM(ct.valor * cc.percentual_comissao / 100) as total
     FROM cobrancas cb
     JOIN contratos ct ON cb.contrato_id = ct.id
-    JOIN planos p ON ct.plano_id = p.id
-    JOIN clientes_locutores cl ON ct.cliente_id = cl.cliente_id
+    JOIN cliente_colaboradores cc ON ct.cliente_id = cc.cliente_id
     WHERE cb.pago = 1 AND MONTH(cb.data_pagamento) = ? AND YEAR(cb.data_pagamento) = ?
 ");
 $stmt_comissoes->bind_param("ii", $mes, $ano);
@@ -50,7 +49,14 @@ $stmt_comissoes->execute();
 $total_comissoes = $stmt_comissoes->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt_comissoes->close();
 
-$total_saidas_final = $total_saidas + $total_comissoes;
+// Saídas (Retiradas de Sócios)
+$stmt_retiradas = $conn->prepare("SELECT SUM(valor) as total FROM investimentos_socios WHERE tipo = 'retirada' AND MONTH(data) = ? AND YEAR(data) = ?");
+$stmt_retiradas->bind_param("ii", $mes, $ano);
+$stmt_retiradas->execute();
+$total_retiradas = $stmt_retiradas->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt_retiradas->close();
+
+$total_saidas_final = $total_saidas + $total_comissoes + $total_retiradas;
 $lucro = $total_entradas - $total_saidas_final;
 ?>
 
@@ -78,11 +84,12 @@ $lucro = $total_entradas - $total_saidas_final;
 <div class="summary">
     <h2>Resumo para <?php echo strftime('%B', mktime(0, 0, 0, $mes, 1)); ?> de <?php echo $ano; ?></h2>
     <p><strong>Entradas (Cobranças):</strong> <span style="color: green;">R$ <?php echo number_format($total_entradas_cobrancas, 2, ',', '.'); ?></span></p>
-    <p><strong>Entradas (Investimentos):</strong> <span style="color: green;">R$ <?php echo number_format($total_investimentos, 2, ',', '.'); ?></span></p>
+    <p><strong>Entradas (Investimentos de Sócios):</strong> <span style="color: green;">R$ <?php echo number_format($total_investimentos, 2, ',', '.'); ?></span></p>
     <p><strong>Total de Entradas:</strong> <span style="color: darkgreen; font-weight: bold;">R$ <?php echo number_format($total_entradas, 2, ',', '.'); ?></span></p>
     <hr>
     <p><strong>Saídas (Despesas):</strong> <span style="color: red;">R$ <?php echo number_format($total_saidas, 2, ',', '.'); ?></span></p>
     <p><strong>Saídas (Comissões):</strong> <span style="color: red;">R$ <?php echo number_format($total_comissoes, 2, ',', '.'); ?></span></p>
+    <p><strong>Saídas (Retiradas de Sócios):</strong> <span style="color: red;">R$ <?php echo number_format($total_retiradas, 2, ',', '.'); ?></span></p>
     <p><strong>Total de Saídas:</strong> <span style="color: darkred; font-weight: bold;">R$ <?php echo number_format($total_saidas_final, 2, ',', '.'); ?></span></p>
     <hr>
     <p><strong>Lucro/Prejuízo:</strong> <span style="color: <?php echo ($lucro >= 0) ? 'blue;' : 'darkred;'; ?>; font-weight: bold;">R$ <?php echo number_format($lucro, 2, ',', '.'); ?></span></p>
