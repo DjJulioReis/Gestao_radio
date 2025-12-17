@@ -146,6 +146,11 @@ if (!isset($_SESSION['user_id'])) {
             <a href="financeiro.php">Acessar</a>
             </div>
             <div class="card">
+                <h3>Balanço Mensal</h3>
+                <p>Visualize o balanço de entradas e saídas com gráfico mensal.</p>
+                <a href="relatorio_balanco_mensal.php">Acessar</a>
+            </div>
+            <div class="card">
                 <h3>Contratos</h3>
                 <p>Gerencie os contratos comerciais com clientes e planos.</p>
                 <a href="contratos.php">Acessar</a>

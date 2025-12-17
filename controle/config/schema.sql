@@ -75,6 +75,7 @@ CREATE TABLE `despesas` (
     `descricao` VARCHAR(255) NOT NULL,
     `valor` DECIMAL(10, 2) NOT NULL,
     `data_vencimento` DATE NOT NULL,
+    `data_pagamento` DATE DEFAULT NULL,
     `tipo` ENUM('fixa', 'normal') NOT NULL,
     `pago` BOOLEAN DEFAULT FALSE,
     `observacao` TEXT,
