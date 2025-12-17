@@ -13,8 +13,8 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
-// Atualiza o status para pago e define a data de pagamento como a data atual
-$stmt = $conn->prepare("UPDATE despesas SET pago = 1, data_pagamento = NOW() WHERE id = ?");
+// Apenas atualiza o status para pago
+$stmt = $conn->prepare("UPDATE despesas SET pago = 1 WHERE id = ?");
 $stmt->bind_param("i", $id);
 
 if ($stmt->execute()) {
