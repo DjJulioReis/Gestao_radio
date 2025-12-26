@@ -27,6 +27,11 @@ $planos = $conn->query("SELECT id, nome FROM planos ORDER BY nome");
     </div>
 
     <div class="form-group">
+        <label for="valor">Valor Mensal (R$)</label>
+        <input type="number" step="0.01" name="valor" id="valor" class="form-control" required placeholder="Ex: 250.00">
+    </div>
+
+    <div class="form-group">
         <label for="identificacao">Identificação do Contrato (Opcional)</label>
         <input type="text" name="identificacao" id="identificacao" class="form-control" placeholder="Ex: Contrato de Natal, Pacote de Férias">
     </div>

@@ -11,32 +11,25 @@ if ($_SESSION['user_level'] !== 'admin' || $_SERVER['REQUEST_METHOD'] !== 'POST'
 $cliente_id = filter_input(INPUT_POST, 'cliente_id', FILTER_VALIDATE_INT);
 $plano_id = filter_input(INPUT_POST, 'plano_id', FILTER_VALIDATE_INT);
 $identificacao = trim(filter_input(INPUT_POST, 'identificacao', FILTER_SANITIZE_STRING));
+$valor = filter_input(INPUT_POST, 'valor', FILTER_VALIDATE_FLOAT);
 $data_inicio = $_POST['data_inicio']; // Adicionar validação de data se necessário
 $data_fim = $_POST['data_fim'];       // Adicionar validação de data se necessário
 
-if (!$cliente_id || !$plano_id || empty($data_inicio) || empty($data_fim)) {
+if (!$cliente_id || !$plano_id || !$valor || empty($data_inicio) || empty($data_fim)) {
     // Redireciona de volta com erro se dados forem inválidos
-    header("Location: ../contrato_add.php?error=dados_invalidos");
+    $_SESSION['error_message'] = "Dados inválidos. Verifique todos os campos.";
+    header("Location: ../contrato_add.php");
     exit();
 }
 
 // Prepara e executa a query de inserção
 $stmt = $conn->prepare(
-    "INSERT INTO contratos (cliente_id, plano_id, identificacao, data_inicio, data_fim) VALUES (?, ?, ?, ?, ?)"
+    "INSERT INTO contratos (cliente_id, plano_id, identificacao, valor, data_inicio, data_fim) VALUES (?, ?, ?, ?, ?, ?)"
 );
-$stmt->bind_param("iisss", $cliente_id, $plano_id, $identificacao, $data_inicio, $data_fim);
+$stmt->bind_param("iisdss", $cliente_id, $plano_id, $identificacao, $valor, $data_inicio, $data_fim);
 
 if ($stmt->execute()) {
     $contrato_id = $stmt->insert_id;
-
-    // Busca o valor do plano para usar na cobrança
-    $stmt_plano = $conn->prepare("SELECT preco FROM planos WHERE id = ?");
-    $stmt_plano->bind_param("i", $plano_id);
-    $stmt_plano->execute();
-    $result_plano = $stmt_plano->get_result();
-    $plano = $result_plano->fetch_assoc();
-    $valor_plano = $plano['preco'];
-    $stmt_plano->close();
 
     // Lógica para gerar cobranças mensais
     $inicio = new DateTime($data_inicio);

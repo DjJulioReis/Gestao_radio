@@ -165,6 +165,11 @@ if (!isset($_SESSION['user_id'])) {
                 <p>Gerencie os investimentos externos dos sócios.</p>
                 <a href="investimentos_socios.php">Acessar</a>
             </div>
+            <div class="card">
+                <h3>Gestão de Comerciais</h3>
+                <p>Faça o upload e gerencie os arquivos de áudio dos clientes.</p>
+                <a href="comerciais.php">Acessar</a>
+            </div>
         </div>
         
 
@@ -194,6 +199,11 @@ if (!isset($_SESSION['user_id'])) {
                 <h3>Apoio Cultural</h3>
                 <p>Relatório de projetos e seus apoiadores.</p>
                 <a href="relatorio_apoio_cultural.php">Gerar</a>
+            </div>
+            <div class="card">
+                <h3>Agendamentos de Comerciais</h3>
+                <p>Confira a grade de veiculação de comerciais por data.</p>
+                <a href="relatorio_agendamentos.php">Gerar</a>
             </div>
         </div>
     </div>

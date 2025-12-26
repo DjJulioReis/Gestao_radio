@@ -48,6 +48,7 @@ CREATE TABLE `contratos` (
   `identificacao` varchar(255) DEFAULT NULL,
   `cliente_id` int(11) NOT NULL,
   `plano_id` int(11) NOT NULL,
+  `valor` decimal(10,2) NOT NULL,
   `data_inicio` date NOT NULL,
   `data_fim` date NOT NULL,
   PRIMARY KEY (`id`),
@@ -164,4 +165,27 @@ CREATE TABLE `investimentos_socios` (
   PRIMARY KEY (`id`),
   KEY `socio_id` (`socio_id`),
   CONSTRAINT `investimentos_socios_ibfk_1` FOREIGN KEY (`socio_id`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `comerciais` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cliente_id` int(11) NOT NULL,
+  `nome_arquivo` varchar(255) NOT NULL,
+  `caminho_arquivo` varchar(255) NOT NULL,
+  `duracao` int(11) NOT NULL COMMENT 'Em segundos',
+  `ativo` tinyint(1) NOT NULL DEFAULT 1,
+  `data_upload` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `cliente_id` (`cliente_id`),
+  CONSTRAINT `comerciais_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `agendamentos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `comercial_id` int(11) NOT NULL,
+  `horario_programado` datetime NOT NULL,
+  `status` enum('pendente','executado','cancelado') NOT NULL DEFAULT 'pendente',
+  PRIMARY KEY (`id`),
+  KEY `comercial_id` (`comercial_id`),
+  CONSTRAINT `agendamentos_ibfk_1` FOREIGN KEY (`comercial_id`) REFERENCES `comerciais` (`id`) ON DELETE CASCADE
 );
