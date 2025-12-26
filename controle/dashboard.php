@@ -181,9 +181,9 @@ if (!isset($_SESSION['user_id'])) {
                 <a href="relatorio_parcerias.php">Gerar</a>
             </div>
             <div class="card">
-                <h3>Relatório de Locutor</h3>
-                <p>Visualize as comissões e clientes de um locutor.</p>
-                <a href="relatorio_locutor.php">Gerar</a>
+                <h3>Relatório Colaborador</h3>
+                <p>Visualize as comissões e clientes de um colaborador.</p>
+                <a href="relatorio_colaborador.php">Gerar</a>
             </div>
             <div class="card">
                 <h3>Relatório de Débitos</h3>
