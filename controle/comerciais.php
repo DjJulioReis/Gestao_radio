@@ -13,7 +13,7 @@ if ($_SESSION['user_level'] !== 'admin') {
 $sql = "
     SELECT
         co.id,
-        co.nome_arquivo,
+        co.identificador_arquivo,
         co.duracao,
         co.ativo,
         co.data_upload,
@@ -34,7 +34,7 @@ $result = $conn->query($sql);
     <thead>
         <tr>
             <th>Cliente</th>
-            <th>Nome do Arquivo</th>
+            <th>Identificador do Arquivo</th>
             <th>Duração (s)</th>
             <th>Status</th>
             <th>Data de Upload</th>
@@ -46,7 +46,7 @@ $result = $conn->query($sql);
             <?php while($row = $result->fetch_assoc()): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['nome_cliente']); ?></td>
-                    <td><?php echo htmlspecialchars($row['nome_arquivo']); ?></td>
+                    <td><?php echo htmlspecialchars($row['identificador_arquivo']); ?></td>
                     <td><?php echo $row['duracao']; ?>s</td>
                     <td class="<?php echo $row['ativo'] ? 'pago-sim' : 'pago-nao'; ?>">
                         <?php echo $row['ativo'] ? 'Ativo' : 'Inativo'; ?>

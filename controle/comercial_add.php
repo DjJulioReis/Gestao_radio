@@ -28,8 +28,9 @@ $clientes = $conn->query("SELECT id, empresa FROM clientes ORDER BY empresa");
     </div>
 
     <div class="form-group">
-        <label for="arquivo_comercial">Arquivo de Áudio (MP3, WAV)</label>
-        <input type="file" name="arquivo_comercial" id="arquivo_comercial" required accept=".mp3,.wav,.m4a,.aac">
+        <label for="identificador_arquivo">Nome do Arquivo do Comercial</label>
+        <input type="text" name="identificador_arquivo" id="identificador_arquivo" required placeholder="Ex: comercial_padaria_pao_quente_30s.mp3">
+        <small>Digite o nome exato do arquivo de áudio (incluindo .mp3) que está na pasta do aplicativo Windows.</small>
     </div>
 
     <div class="form-group">

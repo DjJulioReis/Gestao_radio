@@ -170,8 +170,7 @@ CREATE TABLE `investimentos_socios` (
 CREATE TABLE `comerciais` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cliente_id` int(11) NOT NULL,
-  `nome_arquivo` varchar(255) NOT NULL,
-  `caminho_arquivo` varchar(255) NOT NULL,
+  `identificador_arquivo` varchar(255) NOT NULL COMMENT 'Ex: COMERCIAL_CLIENTE_X.mp3',
   `duracao` int(11) NOT NULL COMMENT 'Em segundos',
   `ativo` tinyint(1) NOT NULL DEFAULT 1,
   `data_upload` timestamp NOT NULL DEFAULT current_timestamp(),

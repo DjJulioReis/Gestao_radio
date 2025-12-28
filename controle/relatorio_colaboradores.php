@@ -37,7 +37,7 @@ $result = $stmt->get_result();
 ?>
 
 <h1><?php echo $page_title; ?></h1>
-<a href="dashboard.php">Voltar ao Dashboard</a>
+<a href="dashboard.php">voltar ao inicio</a>
 
 <form method="get" action="" class="filter-form">
     <div class="form-group">

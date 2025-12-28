@@ -24,7 +24,7 @@ $projetos = ($result_projetos->num_rows > 0) ? $result_projetos->fetch_all(MYSQL
 ?>
 
 <h1><?php echo $page_title; ?></h1>
-<a href="dashboard.php">Voltar ao Dashboard</a>
+<a href="dashboard.php">voltar ao inicio</a>
 
 <?php if (!empty($projetos)): ?>
     <?php foreach ($projetos as $projeto): ?>
