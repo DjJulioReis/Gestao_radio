@@ -45,14 +45,12 @@ if ($stmt3->affected_rows > 0) {
     $sql_colab = "
         SELECT
             col.id AS colaborador_id,
-            col.funcao,
-            cc.percentual_comissao,
-            s.id AS socio_data_id,
-            s.reinvestir_comissao
+            s.reinvestir_comissao,
+            cc.percentual_comissao
         FROM cliente_colaboradores cc
         JOIN colaboradores col ON cc.colaborador_id = col.id
-        LEFT JOIN socios s ON col.id = s.colaborador_id
-        WHERE cc.cliente_id = ?
+        JOIN socios s ON col.id = s.colaborador_id
+        WHERE cc.cliente_id = ? AND col.funcao = 'socio_locutor'
     ";
     $stmt_colab = $conn->prepare($sql_colab);
     $stmt_colab->bind_param("i", $cliente_id);
@@ -62,23 +60,19 @@ if ($stmt3->affected_rows > 0) {
     if ($result_colab->num_rows > 0) {
         $colaborador = $result_colab->fetch_assoc();
 
-        // Verifica se é sócio-locutor e se o reinvestimento está ativo
-        if ($colaborador['funcao'] === 'socio_locutor' && $colaborador['reinvestir_comissao'] == 1) {
-            $valor_cobranca = $cobranca['valor'];
-            $percentual = $colaborador['percentual_comissao'];
-            $valor_comissao = ($valor_cobranca * $percentual) / 100;
+        if ($colaborador['reinvestir_comissao'] == 1) {
+            $valor_comissao = ($cobranca['valor'] * $colaborador['percentual_comissao']) / 100;
 
             if ($valor_comissao > 0) {
-                // 1. Inserir em investimentos_socios
-                // A coluna `socio_id` na tabela `investimentos_socios` refere-se ao ID da tabela `socios`
+                // Insere o investimento usando o colaborador_id, pois a FK agora aponta para a tabela `colaboradores`
                 $descricao_investimento = "Comissão reinvestida da cobrança #{$id} ({$cobranca['empresa']})";
-                $sql_insert_invest = "INSERT INTO investimentos_socios (socio_id, tipo, valor, data, descricao) VALUES (?, 'investimento', ?, NOW(), ?)";
+                $sql_insert_invest = "INSERT INTO investimentos_socios (socio_id, tipo, valor, data, descricao) VALUES (?, 'investimento', ?, ?, ?)";
                 $stmt_insert_invest = $conn->prepare($sql_insert_invest);
-                $stmt_insert_invest->bind_param("ids", $colaborador['socio_data_id'], $valor_comissao, $descricao_investimento);
+                $stmt_insert_invest->bind_param("idss", $colaborador['colaborador_id'], $valor_comissao, $cobranca['data_pagamento'], $descricao_investimento);
                 $stmt_insert_invest->execute();
                 $stmt_insert_invest->close();
 
-                // 2. Atualizar saldo em socios
+                // Atualiza o saldo do sócio
                 $sql_update_saldo = "UPDATE socios SET saldo_investido = saldo_investido + ? WHERE colaborador_id = ?";
                 $stmt_update_saldo = $conn->prepare($sql_update_saldo);
                 $stmt_update_saldo->bind_param("di", $valor_comissao, $colaborador['colaborador_id']);

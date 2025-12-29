@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 27/12/2025 às 15:41
+-- Tempo de geração: 29/12/2025 às 10:35
 -- Versão do servidor: 10.11.15-MariaDB-cll-lve
 -- Versão do PHP: 8.2.29
 
@@ -319,7 +319,8 @@ INSERT INTO `planos` (`id`, `nome`, `descricao`, `preco`, `insercoes_mes`) VALUE
 (1, 'Basico', '210 inserções mensal, sendo 7 por dia, com direito a dois spots gravados por mês\r\nprazo mínimo contrato de 3 meses.', 500.00, 210),
 (2, 'Profissional ', '450 inserções mensal, sendo 15 por dia, com direito a quatro spots gravados por mês\r\nprazo mínimo contrato de 3 meses.', 1000.00, 450),
 (3, 'Plus', '1000 inserções mensal, sendo 30 por dia, com direito a quatro spots gravados por mês\r\nprazo mínimo contrato de 3 meses.\r\nInclui mais banners e divulgação em todos os projetos da Nova FM, incluso, site, podcast, eventos e redes sociais.', 2000.00, 1000),
-(4, 'Apoio', '7 inserções por dia de 5 segundos cada, pacote mínimo de 3 meses, não tem troca de chamada.', 100.00, 210);
+(4, 'Apoio', '7 inserções por dia de 5 segundos cada, pacote mínimo de 3 meses, não tem troca de chamada.', 100.00, 210),
+(5, 'Especial', 'Plano para clientes antigos que ja tinham contrato com a radio', 300.00, 180);
 
 -- --------------------------------------------------------
 
@@ -341,7 +342,7 @@ CREATE TABLE `socios` (
 INSERT INTO `socios` (`id`, `colaborador_id`, `reinvestir_comissao`, `saldo_investido`) VALUES
 (1, 1, 1, 3000.00),
 (2, 2, 1, 17445.73),
-(3, 3, 1, 0.00);
+(3, 3, 1, 6636.73);
 
 -- --------------------------------------------------------
 
@@ -570,7 +571,7 @@ ALTER TABLE `logs`
 -- AUTO_INCREMENT de tabela `planos`
 --
 ALTER TABLE `planos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de tabela `socios`
