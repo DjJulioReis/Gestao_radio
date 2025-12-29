@@ -3,19 +3,13 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 29/12/2025 às 10:35
+-- Tempo de geração: 29/12/2025 às 13:00
 -- Versão do servidor: 10.11.15-MariaDB-cll-lve
 -- Versão do PHP: 8.2.29
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Banco de dados: `novaf_radio_fm2`
@@ -145,10 +139,14 @@ INSERT INTO `cobrancas` (`id`, `contrato_id`, `cliente_id`, `plano_id`, `valor`,
 (5, 2, 2, 1, 500.00, '2025-11', 1, '2025-12-27'),
 (6, 2, 2, 1, 500.00, '2025-12', 1, '2025-12-27'),
 (7, 2, 2, 1, 500.00, '2026-01', 0, NULL),
-(8, 3, 3, 1, 500.00, '2025-09', 1, '2025-12-27'),
-(9, 3, 3, 1, 500.00, '2025-10', 1, '2025-12-27'),
-(10, 3, 3, 1, 500.00, '2025-11', 1, '2025-12-27'),
-(11, 3, 3, 1, 500.00, '2025-12', 1, '2025-12-27');
+(8, 3, 3, 1, 500.00, '2025-09', 1, '2025-09-10'),
+(9, 3, 3, 1, 500.00, '2025-10', 1, '2025-10-10'),
+(10, 3, 3, 1, 500.00, '2025-11', 1, '2025-11-10'),
+(11, 3, 3, 1, 500.00, '2025-12', 1, '2025-12-27'),
+(12, 4, 4, 1, 500.00, '2025-09', 1, '2025-09-10'),
+(13, 4, 4, 1, 500.00, '2025-10', 1, '2025-10-10'),
+(14, 4, 4, 1, 500.00, '2025-11', 1, '2025-11-10'),
+(15, 4, 4, 1, 500.00, '2025-12', 1, '2025-12-27');
 
 -- --------------------------------------------------------
 
@@ -187,8 +185,7 @@ INSERT INTO `colaboradores` (`id`, `nome`, `email`, `telefone`, `funcao`) VALUES
 CREATE TABLE `comerciais` (
   `id` int(11) NOT NULL,
   `cliente_id` int(11) NOT NULL,
-  `nome_arquivo` varchar(255) NOT NULL,
-  `caminho_arquivo` varchar(255) NOT NULL,
+  `identificador_arquivo` varchar(255) NOT NULL COMMENT 'Ex: COMERCIAL_CLIENTE_X.mp3',
   `duracao` int(11) NOT NULL COMMENT 'Em segundos',
   `ativo` tinyint(1) NOT NULL DEFAULT 1,
   `data_upload` timestamp NOT NULL DEFAULT current_timestamp()
@@ -269,7 +266,7 @@ CREATE TABLE `investimentos_socios` (
 
 INSERT INTO `investimentos_socios` (`id`, `socio_id`, `tipo`, `valor`, `data`, `descricao`) VALUES
 (1, 2, 'investimento', 10809.00, '2025-09-01', 'Valores investios'),
-(2, 2, 'investimento', 6636.73, '2025-12-27', 'Investimento em equipamentos e serviços'),
+(2, 2, 'investimento', 6636.73, '2025-11-27', 'Investimento em equipamentos e serviços'),
 (3, 1, 'investimento', 3000.00, '2025-12-27', 'Sistema financeiro da Radio');
 
 -- --------------------------------------------------------
@@ -286,16 +283,6 @@ CREATE TABLE `logs` (
   `target_id` int(11) DEFAULT NULL,
   `timestamp` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Despejando dados para a tabela `logs`
---
-
-INSERT INTO `logs` (`id`, `user_id`, `action`, `target`, `target_id`, `timestamp`) VALUES
-(1, 4, 'create', 'despesa', 1, '2025-12-18 05:21:01'),
-(2, 4, 'create', 'despesa', 2, '2025-12-27 17:31:43'),
-(3, 4, 'create', 'despesa', 3, '2025-12-27 17:33:54'),
-(4, 4, 'create', 'despesa', 4, '2025-12-27 17:34:46');
 
 -- --------------------------------------------------------
 
@@ -375,10 +362,10 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `nivel_acesso`, `data_criacao`) VALUES
-(1, 'Paulo', 'pauloagrale@gmail.com', '$2y$10$GNM1QmRp62O1U9w2V1oqtuUC528oLJ.l5wd3qWsQdlmeyrshdmeA.', 'admin', '2025-12-17 03:48:25'),
-(2, 'Julio Reis', 'djjulioreis@yahoo.com.br', '$2y$10$7ZL80sUEPq9gvGmEvRUFeu7wqK0kLqC4eQt8x5.j1aOJ8g8QPyD72', 'admin', '2025-12-17 03:49:23'),
-(3, 'Coelho', 'naturenge@gmail.com', '$2y$10$emFzZyff380GZGc6kzxaBOnBVpdAt2UcjrC0iIq3nwXg8aswMchIK', 'admin', '2025-12-17 03:55:09'),
-(4, 'Admin', 'admin@test.com', '$2y$10$hV7e99opwQv6Md3KUWzNpevlzhjzIlM5dYQuug6ptebEmenojUeZy', 'admin', '2025-12-17 03:55:51');
+(1, 'Paulo', 'pauloagrale@gmail.com', '$2y$10$GNM1QmRp62O1U9w2V1oqtuUC528oLJ.l5wd3qWsQdlmeyrshdmeA.', 'admin', '2025-12-17 06:48:25'),
+(2, 'Julio Reis', 'djjulioreis@yahoo.com.br', '$2y$10$7ZL80sUEPq9gvGmEvRUFeu7wqK0kLqC4eQt8x5.j1aOJ8g8QPyD72', 'admin', '2025-12-17 06:49:23'),
+(3, 'Coelho', 'naturenge@gmail.com', '$2y$10$emFzZyff380GZGc6kzxaBOnBVpdAt2UcjrC0iIq3nwXg8aswMchIK', 'admin', '2025-12-17 06:55:09'),
+(4, 'Admin', 'admin@test.com', '$2y$10$hV7e99opwQv6Md3KUWzNpevlzhjzIlM5dYQuug6ptebEmenojUeZy', 'admin', '2025-12-17 06:55:51');
 
 --
 -- Índices para tabelas despejadas
@@ -523,13 +510,13 @@ ALTER TABLE `apoios_culturais`
 -- AUTO_INCREMENT de tabela `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `cobrancas`
 --
 ALTER TABLE `cobrancas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de tabela `colaboradores`
@@ -565,7 +552,7 @@ ALTER TABLE `investimentos_socios`
 -- AUTO_INCREMENT de tabela `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `planos`
@@ -654,7 +641,3 @@ ALTER TABLE `logs`
 ALTER TABLE `socios`
   ADD CONSTRAINT `socios_ibfk_1` FOREIGN KEY (`colaborador_id`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
