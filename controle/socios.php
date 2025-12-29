@@ -31,9 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['socio_id'])) {
 // SQL para buscar todos os colaboradores que são sócios e seus dados financeiros
 $sql = "
     SELECT
-        c.id,
+        c.id as colaborador_id,
         c.nome,
         c.email,
+        s.id as socio_id,
         s.reinvestir_comissao,
         s.saldo_investido
     FROM colaboradores c
@@ -45,7 +46,7 @@ $result = $conn->query($sql);
 ?>
 
 <h1><?php echo $page_title; ?></h1>
-<a href="dashboard.php">Voltar para o Dashboard</a>
+<a href="dashboard.php">voltar ao inicio</a>
 
 <?php
 if (isset($_SESSION['success_message'])) {
@@ -77,13 +78,13 @@ if (isset($_SESSION['error_message'])) {
                     <td><?php echo number_format($row['saldo_investido'], 2, ',', '.'); ?></td>
                     <td>
                         <form action="socios.php" method="post" style="margin: 0;">
-                            <input type="hidden" name="socio_id" value="<?php echo $row['id']; ?>">
+                            <input type="hidden" name="socio_id" value="<?php echo $row['colaborador_id']; ?>">
                             <input type="checkbox" name="reinvestir" <?php echo ($row['reinvestir_comissao'] ? 'checked' : ''); ?> onchange="this.form.submit()">
                             <span class="slider round"></span>
                         </form>
                     </td>
                     <td class="actions">
-                        <a href="investimentos_socios.php?id=<?php echo $row['id']; ?>">Ver/Adicionar Investimentos</a>
+                        <a href="investimentos_socios.php?id=<?php echo $row['colaborador_id']; ?>">Ver/Adicionar Investimentos</a>
                     </td>
                 </tr>
             <?php endwhile; ?>
