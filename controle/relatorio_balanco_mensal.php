@@ -1,6 +1,6 @@
 <?php
 require_once 'init.php';
-$page_title = 'Balanço Mensal';
+$page_title = 'Balanço Mensal Detalhado';
 require_once 'templates/header.php';
 
 // Apenas administradores
@@ -9,67 +9,73 @@ if ($_SESSION['user_level'] !== 'admin') {
     exit();
 }
 
-// Filtros de data
+// Filtros
 $mes_ano = isset($_GET['mes_ano']) ? $_GET['mes_ano'] : date('Y-m');
 $ano = date('Y', strtotime($mes_ano));
 $mes = date('m', strtotime($mes_ano));
-$primeiro_dia = "$mes_ano-01";
-$ultimo_dia = date("Y-m-t", strtotime($primeiro_dia));
-$dias_no_mes = date('t', strtotime($primeiro_dia));
 
-// 1. Calcular Entradas (Cobranças Pagas)
-$sql_entradas = "SELECT SUM(valor) AS total FROM cobrancas WHERE pago = 1 AND data_pagamento BETWEEN ? AND ?";
+// --- CÁLCULOS BASEADOS EM COMPETÊNCIA ---
+
+// 1. Entradas: Cobranças com referência no mês selecionado (pagas ou não)
+$sql_entradas = "
+    SELECT c.empresa, cb.valor, cb.pago, cb.data_pagamento
+    FROM cobrancas cb
+    JOIN clientes c ON cb.cliente_id = c.id
+    WHERE cb.referencia = ?
+    ORDER BY c.empresa
+";
 $stmt_entradas = $conn->prepare($sql_entradas);
-$stmt_entradas->bind_param("ss", $primeiro_dia, $ultimo_dia);
+$stmt_entradas->bind_param("s", $mes_ano);
 $stmt_entradas->execute();
-$result_entradas = $stmt_entradas->get_result();
-$total_entradas = $result_entradas->fetch_assoc()['total'] ?? 0;
+$entradas = $stmt_entradas->get_result()->fetch_all(MYSQLI_ASSOC);
+$total_entradas = array_sum(array_column($entradas, 'valor'));
 $stmt_entradas->close();
 
-// 2. Calcular Saídas (Despesas Pagas)
-$sql_saidas = "SELECT SUM(valor) AS total FROM despesas WHERE pago = 1 AND data_vencimento BETWEEN ? AND ?";
+// 2. Saídas: Despesas com vencimento no mês selecionado
+$sql_saidas = "
+    SELECT descricao, valor, pago, data_pagamento
+    FROM despesas
+    WHERE MONTH(data_vencimento) = ? AND YEAR(data_vencimento) = ?
+    ORDER BY descricao
+";
 $stmt_saidas = $conn->prepare($sql_saidas);
-$stmt_saidas->bind_param("ss", $primeiro_dia, $ultimo_dia);
+$stmt_saidas->bind_param("is", $mes, $ano);
 $stmt_saidas->execute();
-$result_saidas = $stmt_saidas->get_result();
-$total_saidas = $result_saidas->fetch_assoc()['total'] ?? 0;
+$saidas_despesas = $stmt_saidas->get_result()->fetch_all(MYSQLI_ASSOC);
+$total_saidas_despesas = array_sum(array_column($saidas_despesas, 'valor'));
 $stmt_saidas->close();
 
-// 3. Calcular Balanço
+// 3. Saídas: Comissões de cobranças do mês (apenas de não-sócios)
+$sql_comissoes = "
+    SELECT
+        cl.empresa,
+        col.nome as colaborador,
+        (cb.valor * cc.percentual_comissao / 100) AS valor_comissao,
+        cb.pago
+    FROM cobrancas cb
+    JOIN cliente_colaboradores cc ON cb.cliente_id = cc.cliente_id
+    JOIN colaboradores col ON cc.colaborador_id = col.id
+    JOIN clientes cl ON cb.cliente_id = cl.id
+    LEFT JOIN socios s ON col.id = s.colaborador_id
+    WHERE
+        cb.referencia = ?
+        AND (col.funcao != 'socio_locutor' OR s.reinvestir_comissao = 0)
+    ORDER BY cl.empresa
+";
+$stmt_comissoes = $conn->prepare($sql_comissoes);
+$stmt_comissoes->bind_param("s", $mes_ano);
+$stmt_comissoes->execute();
+$saidas_comissoes = $stmt_comissoes->get_result()->fetch_all(MYSQLI_ASSOC);
+$total_saidas_comissoes = array_sum(array_column($saidas_comissoes, 'valor_comissao'));
+$stmt_comissoes->close();
+
+
+$total_saidas = $total_saidas_despesas + $total_saidas_comissoes;
 $balanco_final = $total_entradas - $total_saidas;
-
-// 4. Preparar dados para o gráfico (diário)
-$dados_grafico = [
-    'labels' => range(1, $dias_no_mes),
-    'entradas' => array_fill(1, $dias_no_mes, 0),
-    'saidas' => array_fill(1, $dias_no_mes, 0),
-];
-
-// Entradas por dia
-$sql_entradas_dia = "SELECT DAY(data_pagamento) AS dia, SUM(valor) AS total FROM cobrancas WHERE pago = 1 AND data_pagamento BETWEEN ? AND ? GROUP BY dia ORDER BY dia";
-$stmt_entradas_dia = $conn->prepare($sql_entradas_dia);
-$stmt_entradas_dia->bind_param("ss", $primeiro_dia, $ultimo_dia);
-$stmt_entradas_dia->execute();
-$result_entradas_dia = $stmt_entradas_dia->get_result();
-while ($row = $result_entradas_dia->fetch_assoc()) {
-    $dados_grafico['entradas'][$row['dia']] = $row['total'];
-}
-$stmt_entradas_dia->close();
-
-// Saídas por dia
-$sql_saidas_dia = "SELECT DAY(data_vencimento) AS dia, SUM(valor) AS total FROM despesas WHERE pago = 1 AND data_vencimento BETWEEN ? AND ? GROUP BY dia ORDER BY dia";
-$stmt_saidas_dia = $conn->prepare($sql_saidas_dia);
-$stmt_saidas_dia->bind_param("ss", $primeiro_dia, $ultimo_dia);
-$stmt_saidas_dia->execute();
-$result_saidas_dia = $stmt_saidas_dia->get_result();
-while ($row = $result_saidas_dia->fetch_assoc()) {
-    $dados_grafico['saidas'][$row['dia']] = $row['total'];
-}
-$stmt_saidas_dia->close();
 
 ?>
 
-<h1><?php echo $page_title; ?></h1>
+<h1><?php echo $page_title; ?> (Competência: <?php echo date('m/Y', strtotime($mes_ano)); ?>)</h1>
 <a href="dashboard.php">voltar ao inicio</a>
 
 <form method="get" action="" class="filter-form">
@@ -82,88 +88,100 @@ $stmt_saidas_dia->close();
 
 <div class="summary-container">
     <div class="summary-card">
-        <h3>Total de Entradas</h3>
+        <h3>Total de Entradas (Previsto)</h3>
         <p class="income">R$ <?php echo number_format($total_entradas, 2, ',', '.'); ?></p>
     </div>
     <div class="summary-card">
-        <h3>Total de Saídas</h3>
+        <h3>Total de Saídas (Previsto)</h3>
         <p class="expense">R$ <?php echo number_format($total_saidas, 2, ',', '.'); ?></p>
     </div>
     <div class="summary-card">
-        <h3>Balanço Final</h3>
+        <h3>Balanço Final (Previsto)</h3>
         <p class="<?php echo $balanco_final >= 0 ? 'balance-positive' : 'balance-negative'; ?>">
             R$ <?php echo number_format($balanco_final, 2, ',', '.'); ?>
         </p>
     </div>
 </div>
 
-<div class="chart-container" style="margin-top: 40px;">
-    <canvas id="balancoChart"></canvas>
+<div class="details-container">
+    <div class="column">
+        <h2>Entradas (Cobranças)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($entradas as $entrada): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($entrada['empresa']); ?></td>
+                    <td>R$ <?php echo number_format($entrada['valor'], 2, ',', '.'); ?></td>
+                    <td><?php echo $entrada['pago'] ? '<span style="color:green;">Pago</span>' : '<span style="color:red;">Pendente</span>'; ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <div class="column">
+        <h2>Saídas (Despesas e Comissões)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($saidas_despesas as $despesa): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($despesa['descricao']); ?></td>
+                    <td>R$ <?php echo number_format($despesa['valor'], 2, ',', '.'); ?></td>
+                    <td><?php echo $despesa['pago'] ? '<span style="color:green;">Pago</span>' : '<span style="color:red;">Pendente</span>'; ?></td>
+                </tr>
+                <?php endforeach; ?>
+                <?php foreach ($saidas_comissoes as $comissao): ?>
+                <tr>
+                    <td>Comissão: <?php echo htmlspecialchars($comissao['colaborador']) . ' (' . htmlspecialchars($comissao['empresa']) . ')'; ?></td>
+                    <td>R$ <?php echo number_format($comissao['valor_comissao'], 2, ',', '.'); ?></td>
+                    <td><?php echo $comissao['pago'] ? '<span style="color:green;">Pago</span>' : '<span style="color:red;">Pendente</span>'; ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('balancoChart').getContext('2d');
 
-    // Converte os dados do PHP para o formato que o Chart.js espera
-    const chartData = <?php echo json_encode($dados_grafico); ?>;
-
-    // Precisamos garantir que os arrays de dados comecem do índice 0
-    const entradasDiarias = Object.values(chartData.entradas);
-    const saidasDiarias = Object.values(chartData.saidas);
-
-    const balancoChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: chartData.labels,
-            datasets: [
-                {
-                    label: 'Entradas (R$)',
-                    data: entradasDiarias,
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Saídas (R$)',
-                    data: saidasDiarias,
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value, index, values) {
-                            return 'R$ ' + value.toLocaleString('pt-BR');
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += 'R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
-});
-</script>
+<style>
+.details-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+.column {
+    width: 48%;
+}
+.summary-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+.summary-card {
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 30%;
+}
+.income { color: green; font-weight: bold; }
+.expense { color: red; font-weight: bold; }
+.balance-positive { color: blue; font-weight: bold; }
+.balance-negative { color: darkred; font-weight: bold; }
+</style>
 
 <?php
 $conn->close();

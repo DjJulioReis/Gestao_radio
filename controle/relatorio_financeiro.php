@@ -36,14 +36,21 @@ $stmt_saidas->execute();
 $total_saidas = $stmt_saidas->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt_saidas->close();
 
-// Comissões (Saída Adicional)
-// Esta consulta assume que a tabela 'contratos' terá uma coluna 'valor'
+// Comissões (Saída Adicional Apenas para quem NÃO reinveste)
+// Esta consulta calcula a comissão apenas de colaboradores que NÃO são sócios-locutores
+// com reinvestimento ativo, pois a comissão destes não é uma saída, e sim um reinvestimento.
 $stmt_comissoes = $conn->prepare("
     SELECT SUM(ct.valor * cc.percentual_comissao / 100) as total
     FROM cobrancas cb
     JOIN contratos ct ON cb.contrato_id = ct.id
     JOIN cliente_colaboradores cc ON ct.cliente_id = cc.cliente_id
-    WHERE cb.pago = 1 AND MONTH(cb.data_pagamento) = ? AND YEAR(cb.data_pagamento) = ?
+    JOIN colaboradores col ON cc.colaborador_id = col.id
+    LEFT JOIN socios s ON col.id = s.colaborador_id
+    WHERE
+        cb.pago = 1
+        AND MONTH(cb.data_pagamento) = ?
+        AND YEAR(cb.data_pagamento) = ?
+        AND (col.funcao != 'socio_locutor' OR s.reinvestir_comissao = 0)
 ");
 $stmt_comissoes->bind_param("ii", $mes, $ano);
 $stmt_comissoes->execute();
