@@ -14,34 +14,51 @@ $mes = filter_input(INPUT_GET, 'mes', FILTER_VALIDATE_INT, ['options' => ['defau
 $ano = filter_input(INPUT_GET, 'ano', FILTER_VALIDATE_INT, ['options' => ['default' => date('Y')]]);
 
 // --- TOTAIS ---
+
+// Entradas Operacionais (Cobranças Pagas)
 $stmt_entradas = $conn->prepare("SELECT SUM(valor) as total FROM cobrancas WHERE pago = 1 AND MONTH(data_pagamento) = ? AND YEAR(data_pagamento) = ?");
 $stmt_entradas->bind_param("ii", $mes, $ano);
 $stmt_entradas->execute();
 $total_entradas_cobrancas = $stmt_entradas->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt_entradas->close();
 
+// Saídas Operacionais (Despesas Pagas)
+$stmt_saidas = $conn->prepare("SELECT SUM(valor) as total FROM despesas WHERE pago = 1 AND MONTH(data_pagamento) = ? AND YEAR(data_pagamento) = ?");
+$stmt_saidas->bind_param("ii", $mes, $ano);
+$stmt_saidas->execute();
+$total_saidas_despesas = $stmt_saidas->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt_saidas->close();
+
+// Saídas Operacionais (Comissões que NÃO são reinvestidas)
+$stmt_comissoes = $conn->prepare("
+    SELECT SUM(cb.valor * cc.percentual_comissao / 100) as total
+    FROM cobrancas cb
+    JOIN cliente_colaboradores cc ON cb.cliente_id = cc.cliente_id
+    JOIN colaboradores col ON cc.colaborador_id = col.id
+    LEFT JOIN socios s ON col.id = s.colaborador_id
+    WHERE
+        cb.pago = 1
+        AND MONTH(cb.data_pagamento) = ?
+        AND YEAR(cb.data_pagamento) = ?
+        AND (col.funcao != 'socio_locutor' OR s.reinvestir_comissao = 0)
+");
+$stmt_comissoes->bind_param("ii", $mes, $ano);
+$stmt_comissoes->execute();
+$total_comissoes_saida = $stmt_comissoes->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt_comissoes->close();
+
+// Total de Investimentos (Aportes diretos + Comissões Reinvestidas)
 $stmt_investimentos = $conn->prepare("SELECT SUM(valor) as total FROM investimentos_socios WHERE tipo = 'investimento' AND MONTH(data) = ? AND YEAR(data) = ?");
 $stmt_investimentos->bind_param("ii", $mes, $ano);
 $stmt_investimentos->execute();
 $total_investimentos = $stmt_investimentos->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt_investimentos->close();
 
-$total_entradas = $total_entradas_cobrancas;
 
-$stmt_saidas = $conn->prepare("SELECT SUM(valor) as total FROM despesas WHERE pago = 1 AND MONTH(data_pagamento) = ? AND YEAR(data_pagamento) = ?");
-$stmt_saidas->bind_param("ii", $mes, $ano);
-$stmt_saidas->execute();
-$total_saidas = $stmt_saidas->get_result()->fetch_assoc()['total'] ?? 0;
-$stmt_saidas->close();
+$total_entradas_operacional = $total_entradas_cobrancas;
+$total_saidas_operacional = $total_saidas_despesas + $total_comissoes_saida;
+$lucro_operacional = $total_entradas_operacional - $total_saidas_operacional;
 
-$stmt_comissoes = $conn->prepare("SELECT SUM(ct.valor * cc.percentual_comissao / 100) as total FROM cobrancas cb JOIN contratos ct ON cb.contrato_id = ct.id JOIN cliente_colaboradores cc ON ct.cliente_id = cc.cliente_id WHERE cb.pago = 1 AND MONTH(cb.data_pagamento) = ? AND YEAR(cb.data_pagamento) = ?");
-$stmt_comissoes->bind_param("ii", $mes, $ano);
-$stmt_comissoes->execute();
-$total_comissoes = $stmt_comissoes->get_result()->fetch_assoc()['total'] ?? 0;
-$stmt_comissoes->close();
-
-$total_saidas_final = $total_saidas + $total_comissoes;
-$lucro = $total_entradas - $total_saidas_final;
 
 // --- DETALHES ---
 $sql_investimentos_detalhe = "SELECT c.nome AS socio_nome, i.valor, i.data, i.descricao FROM investimentos_socios i JOIN colaboradores c ON i.socio_id = c.id WHERE MONTH(i.data) = ? AND YEAR(i.data) = ? AND i.tipo = 'investimento' ORDER BY i.data";
@@ -58,7 +75,7 @@ $stmt_despesas_detalhe->execute();
 $despesas_detalhadas = $stmt_despesas_detalhe->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_despesas_detalhe->close();
 
-$sql_comissoes_detalhe = "SELECT col.nome as colaborador_nome, cl.empresa as cliente_nome, (ct.valor * cc.percentual_comissao / 100) as valor_comissao, cb.data_pagamento FROM cobrancas cb JOIN contratos ct ON cb.contrato_id = ct.id JOIN cliente_colaboradores cc ON ct.cliente_id = cc.cliente_id JOIN colaboradores col ON cc.colaborador_id = col.id JOIN clientes cl ON cb.cliente_id = cl.id WHERE cb.pago = 1 AND MONTH(cb.data_pagamento) = ? AND YEAR(cb.data_pagamento) = ? ORDER BY cb.data_pagamento";
+$sql_comissoes_detalhe = "SELECT col.nome as colaborador_nome, cl.empresa as cliente_nome, (ct.valor * cc.percentual_comissao / 100) as valor_comissao, cb.data_pagamento FROM cobrancas cb JOIN contratos ct ON cb.contrato_id = ct.id JOIN cliente_colaboradores cc ON ct.cliente_id = cc.cliente_id JOIN colaboradores col ON cc.colaborador_id = col.id JOIN clientes cl ON cb.cliente_id = cl.id LEFT JOIN socios s ON col.id = s.colaborador_id WHERE cb.pago = 1 AND MONTH(cb.data_pagamento) = ? AND YEAR(cb.data_pagamento) = ? AND (col.funcao != 'socio_locutor' OR s.reinvestir_comissao = 0) ORDER BY cb.data_pagamento";
 $stmt_comissoes_detalhe = $conn->prepare($sql_comissoes_detalhe);
 $stmt_comissoes_detalhe->bind_param("is", $mes, $ano);
 $stmt_comissoes_detalhe->execute();
@@ -78,17 +95,17 @@ $stmt_comissoes_detalhe->close();
 <div class="summary">
     <h2>Resumo para <?php echo strftime('%B', mktime(0, 0, 0, $mes, 1)); ?> de <?php echo $ano; ?></h2>
     <p><strong>Entradas (Cobranças):</strong> <span style="color: green;">R$ <?php echo number_format($total_entradas_cobrancas, 2, ',', '.'); ?></span></p>
-    <p><strong>Total de Entradas (Operacional):</strong> <span style="color: darkgreen; font-weight: bold;">R$ <?php echo number_format($total_entradas, 2, ',', '.'); ?></span></p><hr>
-    <p><strong>Saídas (Despesas):</strong> <span style="color: red;">R$ <?php echo number_format($total_saidas, 2, ',', '.'); ?></span></p>
-    <p><strong>Saídas (Comissões):</strong> <span style="color: red;">R$ <?php echo number_format($total_comissoes, 2, ',', '.'); ?></span></p>
-    <p><strong>Total de Saídas (Operacional):</strong> <span style="color: darkred; font-weight: bold;">R$ <?php echo number_format($total_saidas_final, 2, ',', '.'); ?></span></p><hr>
-    <p><strong>Lucro/Prejuízo (Operacional):</strong> <span style="color: <?php echo ($lucro >= 0) ? 'blue;' : 'darkred;'; ?>; font-weight: bold;">R$ <?php echo number_format($lucro, 2, ',', '.'); ?></span></p><hr>
-    <p><strong>Total de Investimentos no Mês:</strong> <span style="color: blue; font-weight: bold;">R$ <?php echo number_format($total_investimentos, 2, ',', '.'); ?></span></p>
+    <p><strong>Total de Entradas (Operacional):</strong> <span style="color: darkgreen; font-weight: bold;">R$ <?php echo number_format($total_entradas_operacional, 2, ',', '.'); ?></span></p><hr>
+    <p><strong>Saídas (Despesas):</strong> <span style="color: red;">R$ <?php echo number_format($total_saidas_despesas, 2, ',', '.'); ?></span></p>
+    <p><strong>Saídas (Comissões Pagas):</strong> <span style="color: red;">R$ <?php echo number_format($total_comissoes_saida, 2, ',', '.'); ?></span></p>
+    <p><strong>Total de Saídas (Operacional):</strong> <span style="color: darkred; font-weight: bold;">R$ <?php echo number_format($total_saidas_operacional, 2, ',', '.'); ?></span></p><hr>
+    <p><strong>Lucro/Prejuízo (Operacional):</strong> <span style="color: <?php echo ($lucro_operacional >= 0) ? 'blue;' : 'darkred;'; ?>; font-weight: bold;">R$ <?php echo number_format($lucro_operacional, 2, ',', '.'); ?></span></p><hr>
+    <p><strong>Total de Investimentos no Mês (Aportes + Comissões Reinvestidas):</strong> <span style="color: blue; font-weight: bold;">R$ <?php echo number_format($total_investimentos, 2, ',', '.'); ?></span></p>
 </div>
 
 <div class="details-container">
     <div class="column">
-        <h2>Detalhes das Despesas Pagas</h2>
+        <h2>Detalhes das Saídas (Despesas Pagas)</h2>
         <table>
             <thead><tr><th>Data</th><th>Descrição</th><th style="text-align: right;">Valor</th></tr></thead>
             <tbody>
@@ -105,7 +122,7 @@ $stmt_comissoes_detalhe->close();
         </table>
     </div>
     <div class="column">
-        <h2>Detalhes das Comissões Pagas</h2>
+        <h2>Detalhes das Saídas (Comissões Pagas)</h2>
         <table>
             <thead><tr><th>Data</th><th>Colaborador</th><th>Referente a</th><th style="text-align: right;">Valor</th></tr></thead>
             <tbody>
@@ -117,7 +134,7 @@ $stmt_comissoes_detalhe->close();
                     <td style="text-align: right;">R$ <?php echo number_format($comissao['valor_comissao'], 2, ',', '.'); ?></td>
                 </tr>
                 <?php endforeach; else: ?>
-                <tr><td colspan="4">Nenhuma comissão paga neste mês.</td></tr>
+                <tr><td colspan="4">Nenhuma comissão (que não foi reinvestida) foi paga neste mês.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -137,7 +154,7 @@ $stmt_comissoes_detalhe->close();
                 <td style="text-align: right;">R$ <?php echo number_format($investimento['valor'], 2, ',', '.'); ?></td>
             </tr>
             <?php endforeach; else: ?>
-            <tr><td colspan="4">Nenhum investimento encontrado para este mês.</td></tr>
+            <tr><td colspan="4">Nenhum investimento (aporte ou comissão reinvestida) encontrado para este mês.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
