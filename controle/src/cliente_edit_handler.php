@@ -29,8 +29,6 @@ $telefone        = trim($_POST['telefone']);
 $endereco        = trim($_POST['endereco']);
 $credito_permuta = floatval($_POST['credito_permuta']);
 $ativo           = isset($_POST['ativo']) ? 1 : 0;
-$plano_id        = intval($_POST['plano_id']);
-$data_vencimento = intval($_POST['data_vencimento']); // 1, 10 ou 20
 
 // 2️⃣ Verifica se cliente existe
 $stmtCheck = $conn->prepare("SELECT * FROM clientes WHERE id = ?");
@@ -53,9 +51,7 @@ $stmt = $conn->prepare("
         telefone = ?, 
         endereco = ?, 
         credito_permuta = ?, 
-        ativo = ?, 
-        plano_id = ?, 
-        data_vencimento = ?
+        ativo = ?
     WHERE id = ?
 ");
 
@@ -63,9 +59,9 @@ if (!$stmt) {
     die("Erro prepare update cliente: " . $conn->error);
 }
 
-// bind_param correto: 10 variáveis
+// bind_param ajustado para 8 variáveis
 $stmt->bind_param(
-    "sssssdiiii",
+    "sssssdii",
     $empresa,
     $cnpj_cpf,
     $email,
@@ -73,8 +69,6 @@ $stmt->bind_param(
     $endereco,
     $credito_permuta,
     $ativo,
-    $plano_id,
-    $data_vencimento,
     $cliente_id
 );
 
@@ -85,7 +79,7 @@ $stmt->close();
 
 // 4️⃣ Comparar alterações para enviar email
 $alteracoes = [];
-foreach (['empresa','cnpj_cpf','email','telefone','endereco','credito_permuta','ativo','plano_id','data_vencimento'] as $campo) {
+foreach (['empresa','cnpj_cpf','email','telefone','endereco','credito_permuta','ativo'] as $campo) {
     $antigo = $clienteAntigo[$campo];
     $novo   = $$campo; // variável dinâmica
     if ($antigo != $novo) {

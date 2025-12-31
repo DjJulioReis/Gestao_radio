@@ -1,42 +1,64 @@
-<?php require_once __DIR__ . '/../init.php'; require_once PROJECT_ROOT . '/src/db_connect.php'; ?>
+<?php
+require_once '../init.php';
 
-// Apenas administradores
-if (!isset($_SESSION['user_id']) || $_SESSION['user_level'] !== 'admin') {
-    header("Location: ../login.php");
+// Apenas administradores podem adicionar contratos
+if ($_SESSION['user_level'] !== 'admin' || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../dashboard.php");
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $cliente_id = $_POST['cliente_id'];
-    $plano_id = $_POST['plano_id'];
-    $tipo_anuncio_id = $_POST['tipo_anuncio_id'];
-    $data_inicio = $_POST['data_inicio'];
-    $data_fim = $_POST['data_fim'];
+// Validação dos dados recebidos
+$cliente_id = filter_input(INPUT_POST, 'cliente_id', FILTER_VALIDATE_INT);
+$plano_id = filter_input(INPUT_POST, 'plano_id', FILTER_VALIDATE_INT);
+$identificacao = trim(filter_input(INPUT_POST, 'identificacao', FILTER_SANITIZE_STRING));
+$valor = filter_input(INPUT_POST, 'valor', FILTER_VALIDATE_FLOAT);
+$data_inicio = $_POST['data_inicio']; // Adicionar validação de data se necessário
+$data_fim = $_POST['data_fim'];       // Adicionar validação de data se necessário
 
-    // Validação mínima no servidor
-    $data_inicio_obj = new DateTime($data_inicio);
-    $data_fim_obj = new DateTime($data_fim);
-    $intervalo = $data_inicio_obj->diff($data_fim_obj);
-    $meses = $intervalo->y * 12 + $intervalo->m;
-
-    if ($meses < 3) {
-        // Redireciona com erro se o contrato for menor que 3 meses
-        header("Location: ../contrato_add.php?error=short_duration");
-        exit();
-    }
-
-    $stmt = $conn->prepare("INSERT INTO contratos (cliente_id, plano_id, tipo_anuncio_id, data_inicio, data_fim) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("iiiss", $cliente_id, $plano_id, $tipo_anuncio_id, $data_inicio, $data_fim);
-
-    if ($stmt->execute()) {
-        header("Location: ../contratos.php?success=1");
-    } else {
-        header("Location: ../contratos.php?error=1");
-    }
-
-    $stmt->close();
-    $conn->close();
-} else {
+if (!$cliente_id || !$plano_id || !$valor || empty($data_inicio) || empty($data_fim)) {
+    // Redireciona de volta com erro se dados forem inválidos
+    $_SESSION['error_message'] = "Dados inválidos. Verifique todos os campos.";
     header("Location: ../contrato_add.php");
+    exit();
 }
+
+// Prepara e executa a query de inserção
+$stmt = $conn->prepare(
+    "INSERT INTO contratos (cliente_id, plano_id, identificacao, valor, data_inicio, data_fim) VALUES (?, ?, ?, ?, ?, ?)"
+);
+$stmt->bind_param("iisdss", $cliente_id, $plano_id, $identificacao, $valor, $data_inicio, $data_fim);
+
+if ($stmt->execute()) {
+    $contrato_id = $stmt->insert_id;
+
+    // Lógica para gerar cobranças mensais
+    $inicio = new DateTime($data_inicio);
+    $fim = new DateTime($data_fim);
+    // Adiciona um dia ao fim para incluir o último mês no loop
+    $fim->modify('+1 day');
+    $intervalo = new DateInterval('P1M');
+    $periodo = new DatePeriod($inicio, $intervalo, $fim);
+
+    $stmt_cobranca = $conn->prepare(
+        "INSERT INTO cobrancas (contrato_id, cliente_id, plano_id, valor, referencia) VALUES (?, ?, ?, ?, ?)"
+    );
+
+    foreach ($periodo as $data) {
+        $referencia = $data->format('Y-m');
+        $stmt_cobranca->bind_param("iiids", $contrato_id, $cliente_id, $plano_id, $valor_plano, $referencia);
+        $stmt_cobranca->execute();
+    }
+    $stmt_cobranca->close();
+
+    // Redireciona para a lista de contratos com sucesso
+    header("Location: ../contratos.php?success=1");
+    exit();
+} else {
+    // Log do erro e redirecionamento
+    error_log("Erro ao adicionar contrato: " . $stmt->error);
+    header("Location: ../contrato_add.php?error=db_error");
+}
+
+$stmt->close();
+$conn->close();
 exit();

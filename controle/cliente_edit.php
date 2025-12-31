@@ -67,35 +67,6 @@ $cliente['credito_permuta'] = floatval($cliente['credito_permuta'] ?? 0);
         <input type="text" id="data_cadastro" value="<?php echo date('d/m/Y H:i', strtotime($cliente['data_cadastro'])); ?>" readonly>
     </div>
 
-    <?php
-    $planos = $conn->query("SELECT id, nome FROM planos ORDER BY nome");
-    ?>
-
-    <div class="form-group">
-        <label for="plano_id">Plano</label>
-        <select name="plano_id" id="plano_id" required>
-            <?php while ($p = $planos->fetch_assoc()): ?>
-                <option value="<?php echo intval($p['id']); ?>" 
-                    <?php echo ($p['id'] == $cliente['plano_id']) ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($p['nome'], ENT_QUOTES); ?>
-                </option>
-            <?php endwhile; ?>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="data_vencimento">Dia de Vencimento</label>
-        <select name="data_vencimento" id="data_vencimento" required>
-            <?php 
-            $datas = [1, 10, 20];
-            foreach ($datas as $d) {
-                $sel = ($d == $cliente['data_vencimento']) ? "selected" : "";
-                echo "<option value='$d' $sel>".str_pad($d, 2, '0', STR_PAD_LEFT)."</option>";
-            }
-            ?>
-        </select>
-    </div>
-
     <div class="form-group">
         <label for="ativo">Status</label>
         <select name="ativo" id="ativo">

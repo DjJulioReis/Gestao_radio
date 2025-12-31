@@ -13,6 +13,7 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
+// Apenas atualiza o status para pago
 $stmt = $conn->prepare("UPDATE despesas SET pago = 1 WHERE id = ?");
 $stmt->bind_param("i", $id);
 

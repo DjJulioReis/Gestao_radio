@@ -48,7 +48,7 @@ $clientes_amostra = [
     ['Supermercado Preço Bom', '22.333.444/0001-55', 'compras@precobom.com', '11912345678', 'Avenida Principal, 456', 500.00],
 ];
 
-$stmt_cliente = $conn->prepare("INSERT INTO clientes (empresa, cnpj_cpf, email, telefone, endereco, credito_permuta) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt_cliente = $conn->prepare("INSERT INTO clientes (empresa, cnpj_cpf, email, telefone, endereco, credito_permuta, data_cadastro) VALUES (?, ?, ?, ?, ?, ?, NOW())");
 foreach ($clientes_amostra as $cliente) {
     $stmt_cliente->bind_param("sssssd", $cliente[0], $cliente[1], $cliente[2], $cliente[3], $cliente[4], $cliente[5]);
     $stmt_cliente->execute();

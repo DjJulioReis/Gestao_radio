@@ -1,5 +1,8 @@
 <?php
-// O init.php já cuida do session_start()
+// Garante que o init.php seja carregado para iniciar a sessão e as configurações
+require_once __DIR__ . '/../init.php';
+
+// Agora a verificação de sessão pode ser feita com segurança
 if (!isset($_SESSION['user_id']) && basename($_SERVER['PHP_SELF']) !== 'login.php') {
     // O redirecionamento agora é relativo
     header("Location: login.php");
@@ -13,6 +16,7 @@ if (!isset($_SESSION['user_id']) && basename($_SERVER['PHP_SELF']) !== 'login.ph
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - Sistema Rádio FM' : 'Sistema Rádio FM'; ?></title>
     <!-- O caminho para o CSS é relativo à raiz do projeto -->
     <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="header">

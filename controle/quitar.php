@@ -34,13 +34,56 @@ if($permuta > 0){
     $stmt2->execute();
 }
 
-// Quitar cobrança
-if($valor == 0){
-    $stmt3 = $conn->prepare("UPDATE cobrancas SET pago=1, data_pagamento=NOW() WHERE id=?");
-    $stmt3->bind_param("i",$id);
-    $stmt3->execute();
+// Sempre quitar a cobrança, independentemente da permuta
+$stmt3 = $conn->prepare("UPDATE cobrancas SET pago=1, data_pagamento=NOW() WHERE id=?");
+$stmt3->bind_param("i",$id);
+$stmt3->execute();
 
-    // Enviar e-mail de confirmação
+// Enviar e-mail de confirmação apenas se o pagamento foi efetivamente processado
+if ($stmt3->affected_rows > 0) {
+    // Lógica para reinvestir comissão de sócio-locutor
+    $sql_colab = "
+        SELECT
+            col.id AS colaborador_id,
+            s.reinvestir_comissao,
+            cc.percentual_comissao
+        FROM cliente_colaboradores cc
+        JOIN colaboradores col ON cc.colaborador_id = col.id
+        JOIN socios s ON col.id = s.colaborador_id
+        WHERE cc.cliente_id = ? AND col.funcao = 'socio_locutor'
+    ";
+    $stmt_colab = $conn->prepare($sql_colab);
+    $stmt_colab->bind_param("i", $cliente_id);
+    $stmt_colab->execute();
+    $result_colab = $stmt_colab->get_result();
+
+    if ($result_colab->num_rows > 0) {
+        $colaborador = $result_colab->fetch_assoc();
+
+        if ($colaborador['reinvestir_comissao'] == 1) {
+            $valor_comissao = ($cobranca['valor'] * $colaborador['percentual_comissao']) / 100;
+
+            if ($valor_comissao > 0) {
+                // Insere o investimento usando o colaborador_id, pois a FK agora aponta para a tabela `colaboradores`
+                $descricao_investimento = "Comissão reinvestida da cobrança #{$id} ({$cobranca['empresa']})";
+                $sql_insert_invest = "INSERT INTO investimentos_socios (socio_id, tipo, valor, data, descricao) VALUES (?, 'investimento', ?, ?, ?)";
+                $stmt_insert_invest = $conn->prepare($sql_insert_invest);
+                $stmt_insert_invest->bind_param("idss", $colaborador['colaborador_id'], $valor_comissao, $cobranca['data_pagamento'], $descricao_investimento);
+                $stmt_insert_invest->execute();
+                $stmt_insert_invest->close();
+
+                // Atualiza o saldo do sócio
+                $sql_update_saldo = "UPDATE socios SET saldo_investido = saldo_investido + ? WHERE colaborador_id = ?";
+                $stmt_update_saldo = $conn->prepare($sql_update_saldo);
+                $stmt_update_saldo->bind_param("di", $valor_comissao, $colaborador['colaborador_id']);
+                $stmt_update_saldo->execute();
+                $stmt_update_saldo->close();
+            }
+        }
+    }
+    $stmt_colab->close();
+
+
     $assunto = "Pagamento Confirmado – $referencia";
     $mensagem = "
         <h2>Olá, {$cobranca['empresa']}!</h2>

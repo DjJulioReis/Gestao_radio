@@ -51,37 +51,6 @@ require_once 'templates/header.php';
         <input type="date" name="data_cadastro" id="data_cadastro" required>
     </div>
 
-    <!-- NOVO CAMPO: DATA DE VENCIMENTO -->
-    <div class="form-group">
-        <label for="data_vencimento">Dia de vencimento</label>
-        <select name="data_vencimento" id="data_vencimento" required>
-            <?php 
-                $datas = [1, 10, 20];
-                foreach ($datas as $d) {
-                    $label = str_pad($d, 2, '0', STR_PAD_LEFT);
-                    $sel = ($d == 10) ? "selected" : "";
-                    echo "<option value='$d' $sel>$label</option>";
-                }
-            ?>
-        </select>
-    </div>
-
-    <?php
-    $planos = $conn->query("SELECT id, nome FROM planos ORDER BY nome");
-    ?>
-
-    <div class="form-group">
-        <label for="plano_id">Plano</label>
-        <select name="plano_id" id="plano_id" required>
-            <option value="">Selecione um plano</option>
-            <?php while ($p = $planos->fetch_assoc()): ?>
-                <option value="<?php echo $p['id']; ?>">
-                    <?php echo htmlspecialchars($p['nome']); ?>
-                </option>
-            <?php endwhile; ?>
-        </select>
-    </div>
-
     <button type="submit">Salvar</button>
     <a href="clientes.php" class="cancel-link">Cancelar</a>
 

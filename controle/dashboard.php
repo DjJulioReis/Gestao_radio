@@ -126,19 +126,49 @@ if (!isset($_SESSION['user_id'])) {
                 <a href="despesas.php">Acessar</a>
             </div>
             <div class="card">
-                <h3>Locutores</h3>
-                <p>Gerencie os locutores e suas associações com clientes.</p>
-                <a href="locutores.php">Acessar</a>
+                <h3>Colaboradores</h3>
+                <p>Gerencie os colaboradores e suas funções na rádio.</p>
+                <a href="colaboradores.php">Acessar</a>
+            </div>
+            <div class="card">
+                <h3>Sócios</h3>
+                <p>Gerencie o status de reinvestimento e os investimentos dos sócios.</p>
+                <a href="socios.php">Acessar</a>
             </div>
              <div class="card">
                 <h3>Associar Clientes</h3>
-                <p>Associe clientes a locutores para o cálculo de comissões.</p>
-                <a href="locutor_clientes.php">Acessar</a>
+                <p>Associe clientes a colaboradores para o cálculo de comissões.</p>
+                <a href="cliente_colaboradores.php">Acessar</a>
             </div>
             <div class="card">
             <h3>Financeiro</h3>
             <p>Visualize e gerencie cobranças, débitos e pagamentos de clientes.</p>
             <a href="financeiro.php">Acessar</a>
+            </div>
+            <div class="card">
+                <h3>Balanço Mensal</h3>
+                <p>Visualize o balanço de entradas e saídas com gráfico mensal.</p>
+                <a href="relatorio_balanco_mensal.php">Acessar</a>
+            </div>
+            <div class="card">
+                <h3>Contratos</h3>
+                <p>Gerencie os contratos comerciais com clientes e planos.</p>
+                <a href="contratos.php">Acessar</a>
+            </div>
+            <div class="card">
+                <h3>Apoios Culturais</h3>
+                <p>Gerencie projetos culturais e seus respectivos apoiadores.</p>
+                <a href="apoios_culturais.php">Acessar</a>
+            </div>
+            <div class="card">
+                <h3>Investimentos de Sócios</h3>
+                <p>Gerencie os investimentos externos dos sócios.</p>
+                <a href="investimentos_socios.php">Acessar</a>
+            </div>
+            <div class="card">
+                <h3>Gestão de Comerciais</h3>
+                <p>Faça o upload e gerencie os arquivos de áudio dos clientes.</p>
+                <a href="comerciais.php">Acessar</a>
             </div>
         </div>
         
@@ -146,9 +176,9 @@ if (!isset($_SESSION['user_id'])) {
         <h2 style="margin-top: 40px;">Relatórios</h2>
         <div class="grid-container reports-section">
             <div class="card">
-                <h3>Relatório Mensal</h3>
-                <p>Visualize o balanço de entradas e saídas do mês.</p>
-                <a href="relatorio_mensal.php">Gerar</a>
+                <h3>Relatório Financeiro</h3>
+                <p>Visualize o balanço de entradas, saídas e lucro.</p>
+                <a href="relatorio_financeiro.php">Gerar</a>
             </div>
             <div class="card">
                 <h3>Relatório de Parcerias</h3>
@@ -156,9 +186,24 @@ if (!isset($_SESSION['user_id'])) {
                 <a href="relatorio_parcerias.php">Gerar</a>
             </div>
             <div class="card">
-                <h3>Comissões de Locutores</h3>
-                <p>Calcule e visualize as comissões mensais dos locutores.</p>
-                <a href="relatorio_locutores.php">Gerar</a>
+                <h3>Relatório Colaborador</h3>
+                <p>Visualize as comissões e clientes de um colaborador.</p>
+                <a href="relatorio_colaborador.php">Gerar</a>
+            </div>
+            <div class="card">
+                <h3>Relatório de Débitos</h3>
+                <p>Liste todos os clientes com faturas pendentes.</p>
+                <a href="relatorio_debitos.php">Gerar</a>
+            </div>
+            <div class="card">
+                <h3>Apoio Cultural</h3>
+                <p>Relatório de projetos e seus apoiadores.</p>
+                <a href="relatorio_apoio_cultural.php">Gerar</a>
+            </div>
+            <div class="card">
+                <h3>Agendamentos de Comerciais</h3>
+                <p>Confira a grade de veiculação de comerciais por data.</p>
+                <a href="relatorio_agendamentos.php">Gerar</a>
             </div>
         </div>
     </div>

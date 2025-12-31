@@ -1,0 +1,8 @@
+# Logs
+*.log
+
+# Uploads
+controle/uploads/
+
+# Tests
+tests/

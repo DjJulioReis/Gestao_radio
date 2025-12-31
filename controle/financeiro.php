@@ -1,6 +1,6 @@
 <?php
 require_once 'init.php';
-require_once 'email_config2.php';
+require_once 'email_config.php';
 require_once 'templates/header.php';
 
 
@@ -29,20 +29,18 @@ INNER JOIN planos p ON cb.plano_id = p.id
 ORDER BY cb.pago ASC, cb.referencia DESC
 ";
 $result = $conn->query($sql);
+$lista = ($result->num_rows > 0) ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
-// Totais
-$totalAberto = $totalPago = $totalPermuta = 0;
-$lista = [];
-if($result->num_rows > 0){
-    while($row = $result->fetch_assoc()){
-        $lista[] = $row;
-        if($row['pago']) $totalPago += $row['valor'];
-        else $totalAberto += $row['valor'];
-
-        $totalPermuta += $row['credito_permuta'];
-    }
-}
+// Cálculos de totais otimizados
+$totalAberto = $conn->query("SELECT SUM(valor) AS total FROM cobrancas WHERE pago = 0")->fetch_assoc()['total'] ?? 0;
+$totalPago = $conn->query("SELECT SUM(valor) AS total FROM cobrancas WHERE pago = 1")->fetch_assoc()['total'] ?? 0;
+$totalPermuta = $conn->query("SELECT SUM(credito_permuta) AS total FROM clientes")->fetch_assoc()['total'] ?? 0;
 ?>
+<style>
+    .status-pago { background-color: #d4edda; color: #155724; }
+    .status-a-receber { background-color: #fff3cd; color: #856404; }
+    .status-em-atraso { background-color: #f8d7da; color: #721c24; }
+</style>
 <div class="container">
     <h2>Financeiro - Cobranças</h2>
 <a href="dashboard.php">Voltar para o Inicio</a>
@@ -78,17 +76,31 @@ if($result->num_rows > 0){
                             }
                         }
 
-                        $status = $row['pago']
-                            ? '<span style="color:green;font-weight:bold;">Pago</span>'
-                            : '<span style="color:red;font-weight:bold;">Aberto</span>';
+                        $status_classe = '';
+                        $status_texto = '';
+                        $hoje = new DateTime();
+                        $data_referencia = new DateTime($row['referencia'] . '-01');
+                        // Vencimento no dia 10 do mês de referência
+                        $data_vencimento = new DateTime($data_referencia->format('Y-m-10'));
+
+                        if ($row['pago']) {
+                            $status_classe = 'status-pago';
+                            $status_texto = 'Pago';
+                        } elseif ($hoje > $data_vencimento) {
+                            $status_classe = 'status-em-atraso';
+                            $status_texto = 'Em Atraso';
+                        } else {
+                            $status_classe = 'status-a-receber';
+                            $status_texto = 'A Receber';
+                        }
                     ?>
-                    <tr style="border-bottom:1px solid #ccc;">
+                    <tr class="<?=$status_classe;?>" style="border-bottom:1px solid #ccc;">
                         <td><?=htmlspecialchars($row['empresa']);?></td>
                         <td><?=htmlspecialchars($row['plano_nome']);?></td>
                         <td><?=$row['referencia'];?></td>
                         <td>R$ <?=number_format($valorExibir,2,",",".");?></td>
                         <td>R$ <?=number_format($row['credito_permuta'],2,",",".");?></td>
-                        <td><?=$status;?></td>
+                        <td><?=$status_texto;?></td>
                         <td>
                             <?php if(!$row['pago']): ?>
                                 <a href="quitar.php?id=<?=$row['cobranca_id'];?>" 
